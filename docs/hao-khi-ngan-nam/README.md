@@ -4,7 +4,7 @@
 > **Chọn anh hùng → xây lãnh địa → chiêu mộ tướng → cùng giữ nước nhưng tranh nhau công trạng → ai nhiều Uy danh nhất thắng.**
 > **4–6 người** · 60–75 phút · 12+ tuổi · thiết kế cho chơi online.
 >
-> 🎮 **Bản chơi thử online** (thời Trần: Vân Đồn + Bạch Đằng 1288, 8 anh hùng) nằm trong thư mục gốc của repo. Các con số trong bản thử đã được chỉnh lại sau mô phỏng 400 ván; nơi nào khác với tài liệu này thì **mã nguồn `src/engine/content/` là bản đúng**. Nội dung sử của bản thử đã đối chiếu nguyên văn Toàn thư: xem [nguon-toan-thu.md](../nguon-toan-thu.md).
+> 🎮 **Bản chơi online** (17 trận, chủ phòng chọn 2–8 trận, 8 anh hùng) nằm trong thư mục gốc của repo. Các con số trong bản thử đã được chỉnh lại sau mô phỏng 400 ván; nơi nào khác với tài liệu này thì **mã nguồn `src/engine/content/` là bản đúng**. Nội dung sử của bản thử đã đối chiếu nguyên văn Toàn thư: xem [nguon-toan-thu.md](../nguon-toan-thu.md).
 
 | Tài liệu | Nội dung |
 |---|---|

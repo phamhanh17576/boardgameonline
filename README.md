@@ -4,18 +4,26 @@
 
 Board game chiến thuật **4–6 người** chơi online. Mỗi người là một anh hùng trong sử Việt, cùng nhau đánh các trận có thật nhưng **tranh nhau công trạng**. Ai có nhiều **Uy danh ★** nhất thì thắng. Nội dung sử trích từ **Đại Việt sử ký toàn thư**.
 
-**Bản chơi thử hiện tại:** thời Trần, gồm 2 trận **Vân Đồn** và **Bạch Đằng 1288**, với 8 anh hùng (Trần Hưng Đạo, Trần Quang Khải, Trần Khánh Dư, Trần Quốc Toản, Trần Thủ Độ, Hai Bà Trưng, Bà Triệu, Nguyễn Trãi).
+**Bản hiện tại:** 17 trận có thật, từ Hai Bà Trưng khởi binh (năm 40) đến Ngọc Hồi – Đống Đa (1789). Chủ phòng chọn ván dài **2, 3, 4, 6 hoặc 8 trận**; game rút ngẫu nhiên rồi xếp theo thứ tự năm. 8 anh hùng: Trần Hưng Đạo, Trần Quang Khải, Trần Khánh Dư, Trần Quốc Toản, Trần Thủ Độ, Hai Bà Trưng, Bà Triệu, Nguyễn Trãi, mỗi người một chân dung riêng.
 
-| Sa bàn | Chiến trường Vân Đồn | Sử ký sau trận | Điện thoại |
-|---|---|---|---|
-| ![Sa bàn](docs/anh/sa-ban.png) | ![Chiến trường](docs/anh/chien-truong.png) | ![Sử ký](docs/anh/su-ky.png) | ![Điện thoại](docs/anh/dien-thoai.png) |
+Toàn bộ giao diện vẽ theo **tranh dân gian Đông Hồ**: nền giấy dó, nét mực đen, màu son, chàm, vàng hoè, xanh lá; khung in khắc gỗ, bóng in lệch màu, bộ biểu tượng vẽ riêng.
+
+| Sa bàn | Bạch Đằng 1288 | Triều rút, giặc mắc cọc |
+|---|---|---|
+| ![Sa bàn](docs/anh/sa-ban.jpg) | ![Chiến trường Bạch Đằng](docs/anh/chien-truong.jpg) | ![Triều rút](docs/anh/trieu-rut.jpg) |
+| **Sảnh chờ** | **Sử ký sau trận** | **Điện thoại** |
+| ![Sảnh chờ](docs/anh/sanh-cho.jpg) | ![Sử ký](docs/anh/su-ky.jpg) | ![Điện thoại](docs/anh/dien-thoai.jpg) |
 
 ## Có gì trong bản này
-- **Sa bàn 3D sơn mài** (Three.js / React Three Fiber): bàn đen bóng viền son và vàng, lá vàng bay, sông có sóng, thủy triều rút để lộ bãi cọc Bạch Đằng, thuyền giặc mắc cọc lật đổ, quân lính bằng gỗ bay vòng cung ra trận, tượng gỗ của từng anh hùng, hiệu ứng bụi vàng, vòng sóng tuyệt kỹ, rung camera khi giao chiến.
-- **Phòng chơi online**: vào trang, điền tên, tạo phòng hoặc nhập mã phòng, gửi link mời cho bạn bè. Chủ phòng thêm **máy chơi cùng** cho đủ 4–6 người. Mất mạng thì vào lại được đúng ghế cũ; người rời đi quá 25 giây thì máy tự chơi thay.
-- **Chơi thử với máy**: không cần máy chủ, chạy ngay trong trình duyệt.
-- **Học sử khi chơi**: mỗi trận có cuộn giấy *Bối cảnh* và *Sử ký* trích Toàn thư. Mỗi kỹ năng có mục "Vì sao" kèm nguồn. Mọi thông tin gắn nhãn **Chính sử** hoặc **Tương truyền**.
-- Tự giảm hiệu ứng trên điện thoại. Thêm `?hieuung=cao` hoặc `?hieuung=thap` vào link để chỉnh tay.
+- **Sa bàn 3D kiểu đồ chơi gỗ sơn màu**: bàn gỗ trải bản đồ giấy dó có mây cuộn, sóng nước. Mọi vật thể tô màu phẳng 3 mảng sáng tối và có viền mực như tranh in.
+- **Chiến trường dựng theo địa hình từng trận**: sông (sóng vảy cá, thủy triều), đầm lầy (lau sậy, thuyền độc mộc), ải núi (núi đá vôi, cổng ải), thành (tường, tháp góc, cổng hai tầng mái), đồng bằng (ruộng, nhà mái cong, trại giặc).
+- **Hoạt cảnh theo sử**: ở Bạch Đằng, ta thắng thì triều rút, lộ bãi cọc, thuyền giặc lật trên cọc. Đánh thành thắng thì cờ giặc hạ, cờ ta kéo lên. Thua thì quân giặc tiến lên bờ ta.
+- **Tượng đứng in chân dung** từng anh hùng trên bàn mỗi người, luôn quay về phía người xem. Quân lính gỗ mang màu anh hùng, bay vòng cung ra trận. Giấy màu bung ra khi thắng, mực đen tung khi thua.
+- **Phòng chơi online**: vào trang, điền tên, tạo phòng hoặc nhập mã phòng, gửi link mời. Chủ phòng chọn số trận và thêm **máy chơi cùng** cho đủ 4–6 người. Mất mạng thì vào lại đúng ghế cũ; người rời đi quá 25 giây thì máy tự chơi thay.
+- **Chơi thử với máy**: không cần máy chủ, chạy ngay trong trình duyệt. Muốn dạy đúng một bài thì chọn sẵn trận qua địa chỉ, ví dụ `?tran=bachDang1288,chiLang1427` (tên các trận ở `src/engine/content/battles.ts`).
+- **Học sử khi chơi**: mỗi trận có cuộn giấy *Bối cảnh* và *Sử ký* trích Toàn thư (trận 1789 theo Cương mục). Mỗi kỹ năng có mục "Vì sao" kèm nguồn. Mọi thông tin gắn nhãn **Chính sử** hoặc **Tương truyền**.
+- Bảng **Hướng dẫn** bên trái màn hình nói ngắn gọn lúc này nên làm gì.
+- Tự giảm hiệu ứng trên điện thoại (tắt viền mực, bớt hạt). Thêm `?hieuung=cao` hoặc `?hieuung=thap` vào link để chỉnh tay.
 
 ## Bản xem trước (chơi với máy)
 `npm run build:single` tạo một file duy nhất `dist-single/index.html`. File này chạy được mà không cần máy chủ (chỉ chế độ chơi với máy). Bản này đã được đăng lên claude.ai để chơi thử ngay.
@@ -70,6 +78,7 @@ src/engine/        Luật chơi (TypeScript thuần, dùng chung cho server và 
   bots.ts          Máy chơi cùng
 src/net/           Giao thức phòng chơi + phòng chạy trong trình duyệt
 src/client/        Giao diện React + cảnh 3D (scene/) + bảng điều khiển (ui/)
+  art/heroes/      Chân dung 8 anh hùng kiểu tranh Đông Hồ (vẽ bằng Figma AI)
 worker/index.ts    Cloudflare Worker + Durable Object "Room"
 tests/             Test luật chơi + mô phỏng cân bằng
 docs/              Thiết kế game, luật, trích dẫn Toàn thư
@@ -84,7 +93,7 @@ npm test
 SIM=1 npx vitest run tests/simulate.test.ts --silent=false
 ```
 
-Lệnh thứ hai cho máy tự chơi 400 ván để xem tỉ lệ thắng của từng anh hùng. Lần chạy gần nhất: các anh hùng thắng trong khoảng 15–26%; trận Vân Đồn thắng 64–72%, trận Bạch Đằng 48–60%.
+Lệnh thứ hai cho máy tự chơi 400 ván để xem tỉ lệ thắng của từng anh hùng. Lần chạy gần nhất: các anh hùng thắng trong khoảng 16–28%; trận đầu ván thắng khoảng 82%, trận thứ 8 khoảng 57% (giặc mạnh dần theo ván).
 
 ## Tài liệu
 - [Luật chơi đầy đủ — Hào Khí Ngàn Năm](docs/hao-khi-ngan-nam/README.md)
