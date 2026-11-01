@@ -1,7 +1,9 @@
-import '@fontsource/noto-serif/vietnamese-400.css';
-import '@fontsource/noto-serif/vietnamese-700.css';
-import '@fontsource/noto-serif/latin-400.css';
-import '@fontsource/noto-serif/latin-700.css';
+import '@fontsource/bevan/vietnamese-400.css';
+import '@fontsource/bevan/latin-400.css';
+import '@fontsource/pridi/vietnamese-400.css';
+import '@fontsource/pridi/latin-400.css';
+import '@fontsource/pridi/vietnamese-600.css';
+import '@fontsource/pridi/latin-600.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
 import '@fontsource/be-vietnam-pro/vietnamese-600.css';
 import '@fontsource/be-vietnam-pro/latin-400.css';

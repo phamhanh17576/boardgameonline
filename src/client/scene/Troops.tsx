@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { HEROES, type HeroId } from '../../engine';
-import { GOLD } from '../theme';
+import { Soldier } from './Battlefield';
 import { battleSlot, boardToWorld, reserveSlotLocal } from './layout';
 
 type V3 = [number, number, number];
@@ -79,26 +79,11 @@ export function PlayerTroops({
     });
   });
 
-  const body = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.5 }), [color]);
-  const wood = useMemo(() => new THREE.MeshPhysicalMaterial({ color: '#7a4a24', roughness: 0.5, clearcoat: 0.6 }), []);
-  const gold = useMemo(() => new THREE.MeshStandardMaterial({ color: GOLD, metalness: 1, roughness: 0.35 }), []);
-
   return (
     <group>
       {anims.current.map((a, i) => (
-        <group key={i} ref={(el) => (groupRefs.current[i] = el)} position={a.cur} scale={1.5}>
-          <mesh position={[0, 0.12, 0]} material={body} castShadow>
-            <cylinderGeometry args={[0.07, 0.1, 0.24, 8]} />
-          </mesh>
-          <mesh position={[0, 0.29, 0]} material={wood}>
-            <sphereGeometry args={[0.065, 10, 8]} />
-          </mesh>
-          <mesh position={[0, 0.355, 0]} material={gold}>
-            <coneGeometry args={[0.12, 0.06, 12]} />
-          </mesh>
-          <mesh position={[0.09, 0.22, 0]} material={wood}>
-            <cylinderGeometry args={[0.008, 0.008, 0.46, 4]} />
-          </mesh>
+        <group key={i} ref={(el) => (groupRefs.current[i] = el)} position={a.cur}>
+          <Soldier body={color} scale={1.5} lite />
         </group>
       ))}
     </group>

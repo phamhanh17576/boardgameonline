@@ -1,10 +1,16 @@
-import { Html } from '@react-three/drei';
+// Bàn của mỗi người chơi: khay gỗ lục giác, ô đất tô màu Đông Hồ, tượng đứng in tranh anh hùng.
+import { Billboard, Html, useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef, type ReactNode } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { HEROES, allCells, type HeroId, type Terrain } from '../../engine';
-import { GOLD, LACQUER_RED, TERRAIN_COLOR } from '../theme';
+import { AVATAR } from '../art';
+import { CHAM, DIEP, INK, LA, PAPER_DARK, SON, TERRAIN_COLOR } from '../theme';
+import { Avatar } from '../ui/common';
+import { Icon } from '../ui/Icon';
+import { House, Karst } from './Battlefield';
 import { HEX_SIZE, hexToLocal } from './layout';
+import { Ink, toon } from './toon';
 
 type ViewPlayer = {
   id: string;
@@ -15,6 +21,13 @@ type ViewPlayer = {
   territory: Record<string, Terrain>;
   isBot: boolean;
 };
+
+const trayGeo = new THREE.CylinderGeometry(2.75, 2.9, 0.22, 6);
+const inlayGeo = new THREE.CylinderGeometry(2.58, 2.58, 0.02, 6);
+const emptyGeo = new THREE.CylinderGeometry(HEX_SIZE * 0.9, HEX_SIZE * 0.9, 0.02, 6);
+const emptyRingGeo = new THREE.RingGeometry(HEX_SIZE * 0.86, HEX_SIZE * 0.92, 6, 1);
+const tileGeo = new THREE.CylinderGeometry(HEX_SIZE * 0.93, HEX_SIZE * 0.97, 0.2, 6);
+const turnRingGeo = new THREE.RingGeometry(2.98, 3.2, 6, 1);
 
 export function PlayerBoard({
   p,
@@ -34,39 +47,32 @@ export function PlayerBoard({
   low: boolean;
 }) {
   const hero = HEROES[p.heroId];
-  const glow = useRef<THREE.Mesh>(null!);
+  const turn = useRef<THREE.Mesh>(null!);
   useFrame((state) => {
-    if (!glow.current) return;
-    const t = state.clock.elapsedTime;
-    const m = glow.current.material as THREE.MeshBasicMaterial;
-    m.opacity = active ? 0.45 + Math.sin(t * 3) * 0.25 : 0;
-    glow.current.rotation.z = t * 0.4;
+    if (!turn.current) return;
+    const m = turn.current.material as THREE.MeshBasicMaterial;
+    m.opacity = active ? 0.75 + Math.sin(state.clock.elapsedTime * 3) * 0.25 : 0;
   });
-  const goldMat = useMemo(() => new THREE.MeshStandardMaterial({ color: GOLD, metalness: 1, roughness: 0.3, emissive: '#3a2400', emissiveIntensity: 0.3 }), []);
   return (
     <group position={position} rotation={[0, rotation, 0]}>
-      {/* Đế lục giác sơn son */}
-      <mesh position={[0, 0.02, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
-        <cylinderGeometry args={[2.75, 2.9, 0.16, 6]} />
-        <meshPhysicalMaterial color={LACQUER_RED} roughness={0.32} clearcoat={1} clearcoatRoughness={0.1} />
+      {/* khay gỗ */}
+      <mesh geometry={trayGeo} position={[0, 0.0, 0]} rotation={[0, Math.PI / 6, 0]} material={toon('#8a5a32')} receiveShadow castShadow={!low}>
+        <Ink w={1.4} />
       </mesh>
-      <mesh position={[0, 0.105, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} material={goldMat}>
-        <torusGeometry args={[2.72, 0.035, 4, 6]} />
+      <mesh geometry={inlayGeo} position={[0, 0.115, 0]} rotation={[0, Math.PI / 6, 0]} material={toon(PAPER_DARK)} receiveShadow />
+      {/* vạch lượt đi: viền son quanh khay */}
+      <mesh ref={turn} geometry={turnRingGeo} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]}>
+        <meshBasicMaterial color={SON} transparent opacity={0} side={THREE.DoubleSide} />
       </mesh>
-      {/* Vòng sáng lượt chơi */}
-      <mesh ref={glow} position={[0, 0.12, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.95, 3.25, 6]} />
-        <meshBasicMaterial color={hero.color} transparent opacity={0} toneMapped={false} side={THREE.DoubleSide} />
-      </mesh>
-      {/* Ô trống */}
+      {/* ô trống */}
       {allCells().map((k) => {
         if (p.territory[k]) return null;
         const [x, z] = hexToLocal(k);
         return (
-          <mesh key={k} position={[x, 0.11, z]}>
-            <cylinderGeometry args={[HEX_SIZE * 0.9, HEX_SIZE * 0.9, 0.02, 6]} />
-            <meshStandardMaterial color="#3a0d0a" roughness={0.6} />
-          </mesh>
+          <group key={k} position={[x, 0.13, z]}>
+            <mesh geometry={emptyGeo} material={toon('#c4ad80')} receiveShadow />
+            <mesh geometry={emptyRingGeo} position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} material={toon('#8d7650')} />
+          </group>
         );
       })}
       {Object.entries(p.territory).map(([k, t]) => (
@@ -75,16 +81,16 @@ export function PlayerBoard({
       {ghost.map((g) => (
         <HexTile key={`ghost-${g.cell}`} cell={g.cell} terrain={g.terrain} low={low} ghost />
       ))}
-      {/* Tượng anh hùng */}
-      <group position={[0, 0.1, 2.35]}>
-        <HeroStatue heroId={p.heroId} color={hero.color} />
-      </group>
-      <Html position={[0, 2.2, 2.35]} center distanceFactor={14} zIndexRange={[15, 5]} style={{ pointerEvents: 'none' }}>
-        <div className={`name-plate${active ? ' active' : ''}${isMe ? ' me' : ''}`} style={{ borderColor: hero.color }}>
-          <div className="np-name">{p.name}</div>
-          <div className="np-hero">{hero.name}</div>
-          <div className="np-stats">
-            ★ {p.star} · Lòng dân {p.longDan}
+      {/* tượng đứng in tranh */}
+      <Standee heroId={p.heroId} active={active} position={[0, 0.12, 2.4]} />
+      <Html position={[0, 2.25, 2.4]} center distanceFactor={14} zIndexRange={[15, 5]} style={{ pointerEvents: 'none' }}>
+        <div className={`name-plate${active ? ' active' : ''}${isMe ? ' me' : ''}`}>
+          <Avatar heroId={p.heroId} size={30} />
+          <div>
+            <div className="np-name">{p.name}</div>
+            <div className="np-stats">
+              <Icon name="star" size={11} /> {p.star} <Icon name="dan" size={11} /> {p.longDan} · {hero.name}
+            </div>
           </div>
         </div>
       </Html>
@@ -92,7 +98,56 @@ export function PlayerBoard({
   );
 }
 
-const tileGeo = new THREE.CylinderGeometry(HEX_SIZE * 0.93, HEX_SIZE * 0.97, 0.2, 6);
+/** Tấm tranh khắc in avatar dựng trên đế gỗ, luôn quay về phía người xem. */
+function Standee({ heroId, active, position }: { heroId: HeroId; active: boolean; position: [number, number, number] }) {
+  const tex = useTexture(AVATAR[heroId]);
+  useMemo(() => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+  }, [tex]);
+  const lift = useRef<THREE.Group>(null!);
+  useFrame((s, dt) => {
+    if (!lift.current) return;
+    const target = active ? 0.12 + Math.sin(s.clock.elapsedTime * 3) * 0.04 : 0;
+    lift.current.position.y += (target - lift.current.position.y) * Math.min(1, dt * 8);
+  });
+  const S = 1.25;
+  const color = HEROES[heroId].color;
+  return (
+    <group position={position}>
+      {/* đế gỗ */}
+      <mesh position={[0, 0.08, 0]} material={toon('#6b4424')} castShadow>
+        <cylinderGeometry args={[0.5, 0.56, 0.16, 20]} />
+        <Ink />
+      </mesh>
+      <mesh position={[0, 0.17, 0]} material={toon(color)}>
+        <cylinderGeometry args={[0.44, 0.46, 0.04, 20]} />
+      </mesh>
+      <Billboard lockX lockZ>
+        <group ref={lift}>
+          <group position={[0, 0.2 + S / 2 + 0.06, 0]}>
+            {/* khung mực + viền màu anh hùng */}
+            <mesh position={[0, 0, -0.03]} material={toon(INK)} castShadow>
+              <boxGeometry args={[S + 0.16, S + 0.16, 0.05]} />
+            </mesh>
+            <mesh position={[0, 0, -0.001]} material={toon(color)}>
+              <boxGeometry args={[S + 0.08, S + 0.08, 0.01]} />
+            </mesh>
+            <mesh position={[0, 0, 0.008]}>
+              <planeGeometry args={[S, S]} />
+              <meshBasicMaterial map={tex} />
+            </mesh>
+            {/* lưng tấm tranh: giấy dó */}
+            <mesh position={[0, 0, -0.058]} rotation={[0, Math.PI, 0]}>
+              <planeGeometry args={[S + 0.16, S + 0.16]} />
+              <meshBasicMaterial color={DIEP} />
+            </mesh>
+          </group>
+        </group>
+      </Billboard>
+    </group>
+  );
+}
 
 function HexTile({ cell, terrain, low, ghost = false }: { cell: string; terrain: Terrain; low: boolean; ghost?: boolean }) {
   const [x, z] = hexToLocal(cell);
@@ -102,36 +157,39 @@ function HexTile({ cell, terrain, low, ghost = false }: { cell: string; terrain:
     if (born.current === null) born.current = state.clock.elapsedTime;
     const t = state.clock.elapsedTime - born.current;
     if (ghost) {
-      ref.current.position.y = 0.32 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
+      ref.current.position.y = 0.42 + Math.sin(state.clock.elapsedTime * 4) * 0.05;
       return;
     }
     const p = Math.min(1, t / 0.55);
     const bounce = p < 1 ? (1 - p) * 2.4 - Math.sin(p * Math.PI) * 0.15 : 0;
-    ref.current.position.y = 0.2 + Math.max(-0.05, bounce);
-    const s = 0.6 + 0.4 * Math.min(1, p * 1.4);
-    ref.current.scale.setScalar(s);
+    ref.current.position.y = 0.22 + Math.max(-0.05, bounce);
+    ref.current.scale.setScalar(0.6 + 0.4 * Math.min(1, p * 1.4));
   });
-  const color = TERRAIN_COLOR[terrain];
+  const mat = ghost ? toon(TERRAIN_COLOR[terrain], { transparent: true, opacity: 0.6 }) : toon(TERRAIN_COLOR[terrain]);
   return (
-    <group ref={ref} position={[x, 0.2, z]}>
-      <mesh geometry={tileGeo} castShadow={!low} receiveShadow>
-        <meshPhysicalMaterial color={color} roughness={terrain === 'song' ? 0.1 : 0.35} clearcoat={1} clearcoatRoughness={0.12} transparent={ghost} opacity={ghost ? 0.55 : 1} />
+    <group ref={ref} position={[x, 0.22, z]}>
+      <mesh geometry={tileGeo} material={mat} castShadow={!low && !ghost} receiveShadow>
+        {!ghost && <Ink w={0.7} />}
       </mesh>
-      <TileDecor terrain={terrain} />
+      {!ghost && <TileDecor terrain={terrain} seed={x * 7 + z * 13} />}
     </group>
   );
 }
 
-function TileDecor({ terrain }: { terrain: Terrain }) {
-  const gold = <meshStandardMaterial color={GOLD} metalness={1} roughness={0.3} emissive="#4a2e00" emissiveIntensity={0.3} />;
+function TileDecor({ terrain, seed }: { terrain: Terrain; seed: number }) {
+  const flip = Math.sin(seed) > 0 ? 1 : -1;
   switch (terrain) {
     case 'ruong':
       return (
-        <group position={[0, 0.105, 0]}>
-          {[-0.18, 0, 0.18].map((z) => (
-            <mesh key={z} position={[0, 0, z]}>
-              <boxGeometry args={[0.5, 0.012, 0.03]} />
-              {gold}
+        <group position={[0, 0.105, 0]} rotation={[0, (Math.PI / 3) * (flip > 0 ? 0 : 1), 0]}>
+          {[-0.2, -0.07, 0.07, 0.2].map((z) => (
+            <mesh key={z} position={[0, 0, z]} material={toon(INK)}>
+              <boxGeometry args={[0.52, 0.012, 0.018]} />
+            </mesh>
+          ))}
+          {[-0.14, 0.14].map((x) => (
+            <mesh key={x} position={[x, 0.05, 0.13 * flip]} material={toon(LA)}>
+              <coneGeometry args={[0.04, 0.1, 5]} />
             </mesh>
           ))}
         </group>
@@ -139,197 +197,57 @@ function TileDecor({ terrain }: { terrain: Terrain }) {
     case 'rung':
       return (
         <group position={[0, 0.1, 0]}>
-          {[
-            [-0.14, -0.08, 0.32],
-            [0.15, 0.04, 0.26],
-            [-0.02, 0.18, 0.22],
-          ].map(([x, z, h], i) => (
-            <mesh key={i} position={[x, h / 2, z]}>
-              <coneGeometry args={[0.1, h, 6]} />
-              <meshStandardMaterial color="#1d4a35" flatShading />
-            </mesh>
+          {(
+            [
+              [-0.15, -0.08, 1],
+              [0.16, 0.02, 0.85],
+              [-0.02, 0.19, 0.75],
+            ] as const
+          ).map(([tx, tz, s], i) => (
+            <group key={i} position={[tx * flip, 0, tz]} scale={s}>
+              <mesh position={[0, 0.1, 0]} material={toon('#5a3a1e')}>
+                <cylinderGeometry args={[0.025, 0.035, 0.2, 5]} />
+              </mesh>
+              <mesh position={[0, 0.27, 0]} material={toon(i === 1 ? '#3f6633' : '#2f5428')}>
+                <sphereGeometry args={[0.14, 10, 8]} />
+                <Ink w={0.5} />
+              </mesh>
+            </group>
           ))}
         </group>
       );
     case 'nui':
       return (
         <group position={[0, 0.1, 0]}>
-          <mesh position={[0, 0.18, 0]}>
-            <coneGeometry args={[0.28, 0.36, 5]} />
-            <meshStandardMaterial color="#5c5550" flatShading />
-          </mesh>
-          <mesh position={[0, 0.31, 0]}>
-            <coneGeometry args={[0.09, 0.11, 5]} />
-            {gold}
-          </mesh>
+          <Karst position={[-0.08 * flip, 0, -0.02]} scale={[0.55, 0.62, 0.5]} color="#7d7360" />
+          <Karst position={[0.17 * flip, 0, 0.12]} scale={[0.36, 0.4, 0.34]} color="#6d6452" />
         </group>
       );
     case 'lang':
       return (
         <group position={[0, 0.1, 0]}>
-          <mesh position={[0, 0.08, 0]}>
-            <boxGeometry args={[0.26, 0.16, 0.2]} />
-            <meshStandardMaterial color="#e8d8b0" />
-          </mesh>
-          <mesh position={[0, 0.22, 0]} rotation={[0, Math.PI / 4, 0]}>
-            <coneGeometry args={[0.24, 0.16, 4]} />
-            <meshStandardMaterial color="#5a1a12" />
+          <House position={[-0.06, 0, -0.04]} scale={0.48} roof={flip > 0 ? CHAM : INK} />
+          <mesh position={[0.22, 0.12, 0.16]} material={toon(LA)}>
+            <sphereGeometry args={[0.09, 8, 6]} />
           </mesh>
         </group>
       );
     case 'song':
       return (
-        <mesh position={[0, 0.104, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.14, 0.17, 6]} />
-          <meshStandardMaterial color="#9fd3ff" emissive="#2a6f9f" emissiveIntensity={0.6} />
-        </mesh>
-      );
-  }
-}
-
-/** Tượng gỗ chạm của anh hùng, mỗi người một dáng. */
-export function HeroStatue({ heroId, color }: { heroId: HeroId; color: string }) {
-  const wood = useMemo(() => new THREE.MeshPhysicalMaterial({ color: '#6b3f1f', roughness: 0.45, clearcoat: 0.8, clearcoatRoughness: 0.2 }), []);
-  const gold = useMemo(() => new THREE.MeshStandardMaterial({ color: GOLD, metalness: 1, roughness: 0.3, emissive: '#3a2400', emissiveIntensity: 0.3 }), []);
-  const sash = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.5 }), [color]);
-  const ref = useRef<THREE.Group>(null!);
-  useFrame((s) => {
-    ref.current.rotation.y = Math.sin(s.clock.elapsedTime * 0.5) * 0.15;
-  });
-
-  const figure = (x: number, scale = 1, hat: 'helmet' | 'crown' | 'scholar' | 'non' | 'official' = 'helmet') => (
-    <group position={[x, 0, 0]} scale={scale}>
-      <mesh position={[0, 0.45, 0]} material={wood} castShadow>
-        <cylinderGeometry args={[0.13, 0.26, 0.7, 10]} />
-      </mesh>
-      <mesh position={[0, 0.55, 0]} material={sash}>
-        <torusGeometry args={[0.17, 0.035, 6, 14]} />
-      </mesh>
-      <mesh position={[0, 0.92, 0]} material={wood} castShadow>
-        <sphereGeometry args={[0.13, 14, 12]} />
-      </mesh>
-      {hat === 'helmet' && (
-        <mesh position={[0, 1.04, 0]} material={gold}>
-          <coneGeometry args={[0.15, 0.2, 8]} />
-        </mesh>
-      )}
-      {hat === 'crown' && (
-        <mesh position={[0, 1.05, 0]} material={gold}>
-          <cylinderGeometry args={[0.1, 0.13, 0.12, 8]} />
-        </mesh>
-      )}
-      {hat === 'scholar' && (
-        <mesh position={[0, 1.06, 0]} material={sash}>
-          <boxGeometry args={[0.24, 0.1, 0.18]} />
-        </mesh>
-      )}
-      {hat === 'non' && (
-        <mesh position={[0, 1.03, 0]} material={gold}>
-          <coneGeometry args={[0.26, 0.12, 14]} />
-        </mesh>
-      )}
-      {hat === 'official' && (
-        <mesh position={[0, 1.1, 0]} material={wood}>
-          <cylinderGeometry args={[0.09, 0.11, 0.22, 8]} />
-        </mesh>
-      )}
-    </group>
-  );
-
-  let body: ReactNode;
-  switch (heroId) {
-    case 'haiBaTrung':
-      body = (
-        <>
-          {figure(-0.2, 0.9, 'crown')}
-          {figure(0.2, 0.85, 'crown')}
-        </>
-      );
-      break;
-    case 'baTrieu':
-      body = (
-        <group>
-          <mesh position={[0, 0.38, 0]} material={wood} castShadow>
-            <boxGeometry args={[0.5, 0.32, 0.75]} />
-          </mesh>
-          {[-0.17, 0.17].flatMap((x) => [-0.25, 0.25].map((z) => [x, z])).map(([x, z], i) => (
-            <mesh key={i} position={[x, 0.12, z]} material={wood}>
-              <cylinderGeometry args={[0.06, 0.07, 0.25, 6]} />
+        <group position={[0, 0.103, 0]}>
+          {[
+            [-0.16, -0.12],
+            [0.1, -0.12],
+            [-0.02, 0.06],
+            [-0.18, 0.2],
+            [0.16, 0.2],
+          ].map(([sx, sz], i) => (
+            <mesh key={i} position={[sx, 0, sz]} rotation={[-Math.PI / 2, 0, 0]} material={toon(DIEP)}>
+              <ringGeometry args={[0.06, 0.085, 10, 1, 0, Math.PI]} />
             </mesh>
           ))}
-          <mesh position={[0, 0.42, 0.48]} rotation={[0.9, 0, 0]} material={wood}>
-            <cylinderGeometry args={[0.04, 0.07, 0.4, 6]} />
-          </mesh>
-          <mesh position={[0, 0.55, 0]} material={sash}>
-            <boxGeometry args={[0.52, 0.04, 0.4]} />
-          </mesh>
-          <group position={[0, 0.25, -0.05]} scale={0.7}>
-            {figure(0, 1, 'helmet')}
-          </group>
         </group>
       );
-      break;
-    case 'nguyenTrai':
-      body = (
-        <>
-          {figure(0, 1, 'scholar')}
-          <mesh position={[0.22, 0.55, 0.12]} rotation={[0, 0, Math.PI / 2]} material={gold}>
-            <cylinderGeometry args={[0.03, 0.03, 0.3, 8]} />
-          </mesh>
-        </>
-      );
-      break;
-    case 'tranQuocToan':
-      body = (
-        <>
-          {figure(0, 0.92, 'helmet')}
-          <mesh position={[0.25, 0.75, 0]} material={wood}>
-            <cylinderGeometry args={[0.015, 0.015, 1.5, 5]} />
-          </mesh>
-          <mesh position={[0.45, 1.3, 0]}>
-            <planeGeometry args={[0.38, 0.5]} />
-            <meshStandardMaterial color="#c0392b" side={THREE.DoubleSide} emissive="#5a0a00" emissiveIntensity={0.4} />
-          </mesh>
-        </>
-      );
-      break;
-    case 'tranKhanhDu':
-      body = (
-        <>
-          {figure(0, 1, 'non')}
-          <mesh position={[0.25, 0.55, 0]} rotation={[0, 0, 0.4]} material={wood}>
-            <cylinderGeometry args={[0.02, 0.02, 1.1, 5]} />
-          </mesh>
-        </>
-      );
-      break;
-    case 'tranThuDo':
-      body = figure(0, 1.05, 'official');
-      break;
-    default:
-      body = (
-        <>
-          {figure(0, 1.05, 'helmet')}
-          <mesh position={[0.24, 0.8, 0]} material={wood}>
-            <cylinderGeometry args={[0.015, 0.015, 1.6, 5]} />
-          </mesh>
-          <mesh position={[0.24, 1.62, 0]} material={gold}>
-            <coneGeometry args={[0.04, 0.16, 6]} />
-          </mesh>
-        </>
-      );
   }
-
-  return (
-    <group ref={ref}>
-      <mesh position={[0, 0.06, 0]} material={gold} castShadow>
-        <cylinderGeometry args={[0.42, 0.48, 0.12, 24]} />
-      </mesh>
-      <mesh position={[0, 0.14, 0]}>
-        <cylinderGeometry args={[0.38, 0.4, 0.06, 24]} />
-        <meshPhysicalMaterial color="#140b08" clearcoat={1} roughness={0.2} />
-      </mesh>
-      <group position={[0, 0.16, 0]}>{body}</group>
-    </group>
-  );
 }
+

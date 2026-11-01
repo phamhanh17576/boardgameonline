@@ -1,17 +1,23 @@
+// Hiệu ứng ngắn: giấy màu bung ra, vòng sóng, chữ bay lên. Không phát sáng — màu phẳng như tranh in.
 import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { CHAM, HOE, INK, LA, SON } from '../theme';
 
 type Vec3 = [number, number, number];
+/** 'paper' = giấy màu (son, hoè, chàm, lá); 'ink' = mực đen; hoặc một mã màu. */
+export type BurstColor = 'paper' | 'ink' | string;
+
 interface Burst {
   id: number;
   pos: Vec3;
-  color: string;
+  color: BurstColor;
   count: number;
   born: number;
   life: number;
   vel: Float32Array;
+  spin: Float32Array;
 }
 interface Ring {
   id: number;
@@ -31,92 +37,96 @@ let nextId = 1;
 const pending: { bursts: Burst[]; rings: Ring[]; texts: FloatText[] } = { bursts: [], rings: [], texts: [] };
 let now = 0;
 
-/** Bụi vàng / tia lửa bắn ra từ một điểm. */
-export function burst(pos: Vec3, color = '#f6d27a', count = 40, life = 1.4) {
+/** Bung một nắm giấy màu / mực từ một điểm. */
+export function burst(pos: Vec3, color: BurstColor = 'paper', count = 40, life = 1.6) {
   const vel = new Float32Array(count * 3);
+  const spin = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2;
-    const up = 0.6 + Math.random() * 1.8;
-    const sp = 0.6 + Math.random() * 1.8;
+    const up = 1.2 + Math.random() * 2.2;
+    const sp = 0.5 + Math.random() * 1.6;
     vel[i * 3] = Math.cos(a) * sp;
     vel[i * 3 + 1] = up;
     vel[i * 3 + 2] = Math.sin(a) * sp;
+    spin[i * 3] = (Math.random() - 0.5) * 12;
+    spin[i * 3 + 1] = (Math.random() - 0.5) * 12;
+    spin[i * 3 + 2] = (Math.random() - 0.5) * 12;
   }
-  pending.bursts.push({ id: nextId++, pos, color, count, born: -1, life, vel });
+  pending.bursts.push({ id: nextId++, pos, color, count, born: -1, life, vel, spin });
 }
 
-/** Vòng sóng toả ra (Tuyệt kỹ). */
-export function ring(pos: Vec3, color = '#f6d27a') {
+/** Vòng sóng toả ra mặt bàn (Tuyệt kỹ). */
+export function ring(pos: Vec3, color = SON) {
   pending.rings.push({ id: nextId++, pos, color, born: -1 });
 }
 
-/** Chữ bay lên (ví dụ +3🌾). */
-export function floatText(pos: Vec3, text: string, color = '#f6d27a') {
+/** Chữ bay lên (ví dụ "+3 Lúa"). */
+export function floatText(pos: Vec3, text: string, color = '') {
   pending.texts.push({ id: nextId++, pos, text, color, born: -1 });
 }
 
-let dotTexture: THREE.Texture | null = null;
-function getDot(): THREE.Texture {
-  if (dotTexture) return dotTexture;
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grd.addColorStop(0, 'rgba(255,255,255,1)');
-  grd.addColorStop(0.35, 'rgba(255,240,200,0.8)');
-  grd.addColorStop(1, 'rgba(255,200,120,0)');
-  g.fillStyle = grd;
-  g.fillRect(0, 0, 64, 64);
-  dotTexture = new THREE.CanvasTexture(c);
-  return dotTexture;
-}
+const PAPER_COLORS = [SON, HOE, CHAM, LA, SON, HOE];
+const chipGeo = new THREE.PlaneGeometry(0.11, 0.075);
+const chipMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, transparent: true });
 
-function BurstPoints({ b }: { b: Burst }) {
-  const geo = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b.count * 3), 3));
-    return g;
-  }, [b.count]);
-  const mat = useMemo(
-    () =>
-      new THREE.PointsMaterial({
-        color: b.color,
-        size: 0.22,
-        map: getDot(),
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      }),
-    [b.color],
-  );
+function BurstChips({ b }: { b: Burst }) {
+  const ref = useRef<THREE.InstancedMesh>(null!);
+  const mat = useMemo(() => chipMat.clone(), []);
+  const tmp = useMemo(() => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(), p: new THREE.Vector3(), s: new THREE.Vector3(1, 1, 1) }), []);
+  useLayoutEffect(() => {
+    const c = new THREE.Color();
+    for (let i = 0; i < b.count; i++) {
+      c.set(b.color === 'paper' ? PAPER_COLORS[i % PAPER_COLORS.length] : b.color === 'ink' ? INK : b.color);
+      ref.current.setColorAt(i, c);
+    }
+    if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true;
+  }, [b]);
   useFrame(() => {
     const t = now - b.born;
-    const pos = geo.attributes.position.array as Float32Array;
+    const drag = 1 / (1 + t * 0.9); // giấy rơi chậm, lả lướt
     for (let i = 0; i < b.count; i++) {
-      pos[i * 3] = b.pos[0] + b.vel[i * 3] * t;
-      pos[i * 3 + 1] = b.pos[1] + b.vel[i * 3 + 1] * t - 2.2 * t * t;
-      pos[i * 3 + 2] = b.pos[2] + b.vel[i * 3 + 2] * t;
+      const vx = b.vel[i * 3];
+      const vy = b.vel[i * 3 + 1];
+      const vz = b.vel[i * 3 + 2];
+      tmp.p.set(
+        b.pos[0] + vx * t * drag + Math.sin(t * 3 + i) * 0.06,
+        b.pos[1] + vy * t * drag - 1.6 * t * t * 0.6,
+        b.pos[2] + vz * t * drag,
+      );
+      tmp.e.set(b.spin[i * 3] * t, b.spin[i * 3 + 1] * t, b.spin[i * 3 + 2] * t);
+      tmp.q.setFromEuler(tmp.e);
+      tmp.m.compose(tmp.p, tmp.q, tmp.s);
+      ref.current.setMatrixAt(i, tmp.m);
     }
-    geo.attributes.position.needsUpdate = true;
-    mat.opacity = Math.max(0, 1 - t / b.life);
+    ref.current.instanceMatrix.needsUpdate = true;
+    mat.opacity = Math.max(0, Math.min(1, (b.life - t) / 0.4));
   });
-  return <points geometry={geo} material={mat} />;
+  return <instancedMesh ref={ref} args={[chipGeo, mat, b.count]} frustumCulled={false} />;
 }
 
 function RingMesh({ r }: { r: Ring }) {
-  const ref = useRef<THREE.Mesh>(null!);
-  const mat = useRef<THREE.MeshBasicMaterial>(null!);
+  const ref = useRef<THREE.Group>(null!);
+  const mats = useMemo(
+    () => [new THREE.MeshBasicMaterial({ color: r.color, transparent: true, depthWrite: false }), new THREE.MeshBasicMaterial({ color: INK, transparent: true, depthWrite: false })],
+    [r.color],
+  );
   useFrame(() => {
     const t = now - r.born;
-    const s = 0.3 + t * 4.5;
+    const s = 0.3 + t * 4.2;
     ref.current.scale.set(s, s, s);
-    mat.current.opacity = Math.max(0, 0.9 - t / 1.3);
+    const o = Math.max(0, 1 - t / 1.3);
+    mats[0].opacity = o;
+    mats[1].opacity = o;
   });
   return (
-    <mesh ref={ref} position={r.pos} rotation={[-Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[1, 0.06, 8, 64]} />
-      <meshBasicMaterial ref={mat} color={r.color} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
-    </mesh>
+    <group ref={ref} position={r.pos} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh material={mats[0]}>
+        <ringGeometry args={[0.9, 1, 48]} />
+      </mesh>
+      <mesh material={mats[1]}>
+        <ringGeometry args={[1, 1.03, 48]} />
+      </mesh>
+    </group>
   );
 }
 
@@ -129,7 +139,7 @@ function FloatLabel({ f }: { f: FloatText }) {
   return (
     <group ref={ref} position={f.pos}>
       <Html center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
-        <div className="float-text" style={{ color: f.color }}>
+        <div className="float-text" style={f.color ? { background: f.color } : undefined}>
           {f.text}
         </div>
       </Html>
@@ -164,7 +174,7 @@ export function FxLayer() {
   return (
     <group>
       {L.bursts.map((b) => (
-        <BurstPoints key={b.id} b={b} />
+        <BurstChips key={b.id} b={b} />
       ))}
       {L.rings.map((r) => (
         <RingMesh key={r.id} r={r} />

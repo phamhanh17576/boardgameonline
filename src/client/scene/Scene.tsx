@@ -1,7 +1,5 @@
-import { CameraControls, Environment, Lightformer } from '@react-three/drei';
+import { CameraControls } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer, SMAA, ToneMapping, Vignette } from '@react-three/postprocessing';
-import { ToneMappingMode } from 'postprocessing';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { HEROES, type GameView, type Terrain } from '../../engine';
@@ -14,7 +12,8 @@ import { boardToWorld, seatPosition, seatRotation } from './layout';
 import { PlayerBoard } from './PlayerBoard';
 import { Table } from './Table';
 import { PlayerTroops } from './Troops';
-import { RES_ICON } from '../theme';
+import { HOE, PAPER_DARK, RES_NAME, SON } from '../theme';
+import { InkCtx } from './toon';
 
 const OVERVIEW: [number, number, number, number, number, number] = [0, 23, 15.5, 0, 0, 3.4];
 const BATTLE_VIEW: [number, number, number, number, number, number] = [0, 8.5, 9.5, 0, 0, 0.6];
@@ -22,56 +21,47 @@ const BATTLE_VIEW: [number, number, number, number, number, number] = [0, 8.5, 9
 export function GameScene({ view, low }: { view: GameView; low: boolean }) {
   return (
     <Canvas
+      flat
       shadows={!low}
       dpr={low ? [1, 1.5] : [1, 2]}
       camera={{ position: [OVERVIEW[0], OVERVIEW[1], OVERVIEW[2]], fov: 42, near: 0.1, far: 200 }}
-      gl={{ antialias: low, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
+      gl={{ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
     >
-      <color attach="background" args={['#0c0605']} />
-      <fog attach="fog" args={['#0c0605', 28, 60]} />
-      <Suspense fallback={null}>
-        <Lights low={low} />
-        <Table low={low} />
-        <Battlefield view={view} low={low} />
-        <Boards view={view} low={low} />
-        <FxLayer />
-        <FxDirector view={view} low={low} />
-        <CameraRig view={view} />
-      </Suspense>
-      {!low && (
-        <EffectComposer multisampling={0}>
-          <Bloom mipmapBlur intensity={0.75} luminanceThreshold={0.78} luminanceSmoothing={0.2} />
-          <Vignette eskil={false} offset={0.2} darkness={0.72} />
-          <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
-          <SMAA />
-        </EffectComposer>
-      )}
+      <color attach="background" args={[PAPER_DARK]} />
+      <fog attach="fog" args={[PAPER_DARK, 30, 62]} />
+      <InkCtx.Provider value={!low}>
+        <Suspense fallback={null}>
+          <Lights low={low} />
+          <Table />
+          <Battlefield view={view} low={low} />
+          <Boards view={view} low={low} />
+          <FxLayer />
+          <FxDirector view={view} low={low} />
+          <CameraRig view={view} />
+        </Suspense>
+      </InkCtx.Provider>
     </Canvas>
   );
 }
 
+/** Ánh sáng ban ngày ấm, bóng đổ mềm; chất liệu toon tự chia 3 mảng sáng tối. */
 function Lights({ low }: { low: boolean }) {
   return (
     <>
-      <hemisphereLight args={['#ffe2b0', '#2a0b05', 0.55]} />
+      <hemisphereLight args={['#fff6e2', '#9a7a52', 1.6]} />
       <directionalLight
-        position={[8, 16, 9]}
-        intensity={2.2}
-        color="#ffd9a0"
+        position={[7, 18, 10]}
+        intensity={2.1}
+        color="#fff1d6"
         castShadow={!low}
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-16}
-        shadow-camera-right={16}
-        shadow-camera-top={16}
-        shadow-camera-bottom={-16}
-        shadow-bias={-0.0004}
+        shadow-camera-left={-17}
+        shadow-camera-right={17}
+        shadow-camera-top={17}
+        shadow-camera-bottom={-17}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.02}
       />
-      <directionalLight position={[-10, 7, -12]} intensity={0.9} color="#ff8a4a" />
-      <Environment resolution={low ? 64 : 256} frames={1}>
-        <Lightformer form="rect" intensity={2.5} color="#ffd9a0" position={[0, 6, 4]} scale={[12, 4, 1]} rotation-x={-Math.PI / 2.5} />
-        <Lightformer form="ring" intensity={1.6} color="#ff8a4a" position={[-6, 3, -4]} scale={4} />
-        <Lightformer form="rect" intensity={0.8} color="#6aa0ff" position={[6, 2, -6]} scale={[6, 2, 1]} />
-      </Environment>
     </>
   );
 }
@@ -139,7 +129,7 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
   const shake = useUi((s) => s.shake);
   const statueOf = (pid?: string): [number, number, number] | null => {
     const s = seatOf(pid);
-    return s ? boardToWorld(s.pos, s.rot, [0, 1.2, 2.35]) : null;
+    return s ? boardToWorld(s.pos, s.rot, [0, 1.6, 2.4]) : null;
   };
   const centerOf = (pid?: string): [number, number, number] | null => {
     const s = seatOf(pid);
@@ -150,7 +140,7 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
     switch (e.type) {
       case 'tilePlaced': {
         const c = centerOf(e.playerId);
-        if (c) burst(c, '#f6d27a', Math.round(50 * k));
+        if (c) burst(c, 'paper', Math.round(36 * k));
         break;
       }
       case 'income': {
@@ -158,7 +148,7 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
         const gain = (e.data?.gain ?? {}) as Record<string, number>;
         const txt = Object.entries(gain)
           .filter(([, v]) => v > 0)
-          .map(([r, v]) => `+${v}${RES_ICON[r as keyof typeof RES_ICON]}`)
+          .map(([r, v]) => `+${v} ${RES_NAME[r as keyof typeof RES_NAME]}`)
           .join(' ');
         if (c && txt) floatText(c, txt);
         break;
@@ -166,8 +156,8 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
       case 'generalBought': {
         const c = statueOf(e.playerId);
         if (c) {
-          burst(c, '#ffe6a0', Math.round(70 * k), 1.8);
-          floatText(c, '★ Chiêu hiền');
+          burst(c, 'paper', Math.round(60 * k), 1.8);
+          floatText(c, 'Chiêu hiền', SON);
         }
         break;
       }
@@ -176,8 +166,8 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
         const p = view.players.find((x) => x.id === e.playerId);
         if (c && p) {
           ring([c[0], 0.3, c[2]], HEROES[p.heroId].color);
-          ring([c[0], 0.5, c[2]], '#f6d27a');
-          burst([c[0], 1.2, c[2]], HEROES[p.heroId].color, Math.round(90 * k), 2);
+          setTimeout(() => ring([c[0], 0.32, c[2]], HOE), 180);
+          burst([c[0], 1.2, c[2]], 'paper', Math.round(80 * k), 2);
         }
         break;
       }
@@ -187,13 +177,13 @@ function FxDirector({ view, low }: { view: GameView; low: boolean }) {
       case 'combatResolved': {
         const won = !!e.data?.attackerWon;
         const target = centerOf(won ? e.targetId : e.playerId);
-        if (target) burst(target, won ? '#ff6a2a' : '#9fd3ff', Math.round(90 * k), 1.6);
+        if (target) burst(target, won ? 'ink' : 'paper', Math.round(70 * k), 1.6);
         shake(won ? 0.6 : 0.3);
         break;
       }
       case 'stratPlayed': {
         const c = statueOf(e.playerId);
-        if (c) floatText(c, '📜 Kế sách');
+        if (c) floatText(c, 'Kế sách');
         break;
       }
       case 'troopsRecruited': {
