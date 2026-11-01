@@ -1,4 +1,4 @@
-import { BATTLES, GENERALS, STRATS, TITLES, TITLE_IDS } from './content/cards';
+import { BATTLES, BATTLE_IDS, GENERALS, STRATS, TITLES, TITLE_IDS } from './content/cards';
 import { HEROES } from './content/heroes';
 import { allCells, inBoard, neighbors, parseKey, regions } from './hex';
 import { nextRandom, shuffle } from './rng';
@@ -30,6 +30,13 @@ export const MAX_MO_BINH = 3;
 export const MIN_PLAYERS = 4;
 export const MAX_PLAYERS = 6;
 export const ROW_SIZE = 6;
+export const DEFAULT_BATTLES = 4;
+export const BATTLE_COUNT_OPTIONS = [2, 3, 4, 6, 8];
+/** Sức địch mỗi người chơi = BASE + GROWTH × (thứ tự trận) + độ khó riêng của trận */
+export const ENEMY_BASE = 7.7;
+export const ENEMY_GROWTH = 0.42;
+export const DIFFICULTY_SCALE = 0.4;
+export const ENEMY_OFFSET = -8;
 
 export type ApplyResult = { ok: true; state: GameState } | { ok: false; error: string };
 
@@ -74,7 +81,7 @@ export function currentPlayerId(s: GameState): string {
 }
 
 export function resCap(p: PlayerState): number {
-  return p.heroId === 'tranKhanhDu' ? 13 : MAX_RES;
+  return p.heroId === 'tranKhanhDu' ? 14 : MAX_RES;
 }
 
 export function stratHandLimit(p: PlayerState): number {
@@ -159,7 +166,8 @@ export function isTacticComplete(s: GameState): boolean {
 /** Sức địch hiện tại (đã tính chiến thuật, hiệu ứng). */
 export function enemyStrength(s: GameState): { base: number; final: number; tacticComplete: boolean } {
   const def = battleDef(s);
-  let base = def.strengthPerPlayer * s.players.length + def.strengthBase + s.battle.enemyMod;
+  const perPlayer = ENEMY_BASE + ENEMY_GROWTH * s.battleIndex + def.difficulty * DIFFICULTY_SCALE;
+  let base = Math.round(perPlayer * s.players.length + ENEMY_OFFSET + s.battle.enemyMod);
   for (const p of s.players) {
     if ((s.battle.troops[p.id] ?? 0) <= 0) continue;
     for (const g of p.generals) if (GENERALS[g].ability === 'enemyMinus1') base -= 1;
@@ -203,8 +211,8 @@ export function computeIncome(p: PlayerState): Resources {
   return out;
 }
 
-export function moBinhMax(p: PlayerState): number {
-  return p.heroId === 'baTrieu' ? 2 : MAX_MO_BINH;
+export function moBinhMax(_p: PlayerState): number {
+  return MAX_MO_BINH;
 }
 
 export function moBinhBonus(p: PlayerState): number {
@@ -274,7 +282,7 @@ export function createGame(opts: GameOptions): GameState {
     phase: 'battleIntro',
     players: [],
     order: [],
-    battleOrder: opts.battleOrder ?? ['vanDon1288', 'bachDang1288'],
+    battleOrder: [],
     battleIndex: 0,
     round: 1,
     roundsPerBattle: opts.roundsPerBattle ?? 3,
@@ -320,6 +328,15 @@ export function createGame(opts: GameOptions): GameState {
   s.stratDeck = shuffle(s, strats);
 
   s.titles = shuffle(s, TITLE_IDS).slice(0, 3);
+
+  // Rút ngẫu nhiên các trận rồi xếp theo thứ tự thời gian
+  if (opts.battleOrder && opts.battleOrder.length > 0) s.battleOrder = opts.battleOrder.slice();
+  else {
+    const count = Math.max(1, Math.min(BATTLE_IDS.length, Math.round(opts.battleCount ?? DEFAULT_BATTLES)));
+    s.battleOrder = shuffle(s, BATTLE_IDS)
+      .slice(0, count)
+      .sort((a, b) => BATTLES[a].sortYear - BATTLES[b].sortYear);
+  }
 
   opts.players.forEach((ps, seat) => {
     const hero = HEROES[ps.heroId];
@@ -374,6 +391,12 @@ function startBattle(s: GameState, idx: number) {
     s.battle.tactic[p.id] = emptyRes();
     p.ultUsedBattle = false;
     if (p.heroId === 'tranThuDo') addLongDan(p, -1);
+    // Triều đình cấp quân lương đầu mỗi trận (từ trận thứ 2)
+    if (idx > 0) {
+      if (troopTotal(s, p) < MAX_TROOPS && p.heroId !== 'baTrieu') p.reserve += 1;
+      if (p.heroId === 'tranQuocToan' && troopTotal(s, p) < MAX_TROOPS) p.reserve += 1;
+      p.res.lua += 1;
+    }
   }
   s.round = 1;
   s.turnIndex = 0;
@@ -473,10 +496,9 @@ function resolveBattle(s: GameState) {
       addLongDan(getPlayer(s, pid), 2);
       for (const c of contributions) if (c.playerId !== pid && c.troops > 0) addLongDan(getPlayer(s, c.playerId), 1);
     }
-    const wonBefore = s.wonBattles.length;
     s.wonBattles.push(def.id);
     for (const pid of s.battle.binhNgo) {
-      give(pid, 2 + wonBefore, 'Bình Ngô đại cáo');
+      give(pid, 2, 'Bình Ngô đại cáo');
       addLongDan(getPlayer(s, pid), 1);
     }
   } else {
@@ -498,7 +520,7 @@ function resolveBattle(s: GameState) {
     const p = getPlayer(s, c.playerId);
     if (p.heroId === 'tranQuangKhai' && c.troops === 0) give(p.id, -1, 'Thượng tướng vắng mặt');
     if (c.troops > 0) p.stats.battlesWithTroops += 1;
-    const lost = Math.ceil(c.troops / 2);
+    const lost = Math.ceil(c.troops / 3);
     p.reserve += c.troops - lost;
   }
 
@@ -637,6 +659,10 @@ function resolveCombat(s: GameState) {
         atk.chienCong += 1;
         addStar(atk, 1, 'Chương Dương cướp giáo');
       }
+      if (atk.heroId === 'baTrieu') {
+        atk.chienCong += 1;
+        addStar(atk, 1, 'Cưỡi đầu voi ra trận');
+      }
     } else {
       if (defStrat !== 'vuonKhong') stolen = stealResources(def, atk, 3);
       const isLeader = def.star === leaderStar(s);
@@ -738,7 +764,7 @@ function apply(s: GameState, a: Action) {
       useMainAction(s);
       const inc = computeIncome(p);
       for (const r of RES_KEYS) p.res[r] += inc[r];
-      if (p.heroId === 'tranKhanhDu' && resTotal(p.res) >= 8) addLongDan(p, -1);
+      if (p.heroId === 'tranKhanhDu' && resTotal(p.res) >= 11) addLongDan(p, -1);
       emit(s, { type: 'income', playerId: p.id, text: `${p.name} thu thuế`, data: { gain: inc } });
       return;
     }
@@ -943,7 +969,7 @@ function apply(s: GameState, a: Action) {
             detail = `cướp ${resTotal(st)} tài nguyên của ${t.name}`;
           } else {
             s.battle.enemyMod -= 3;
-            addStar(p, 2, 'Vân Đồn: đánh thuyền lương');
+            addStar(p, 3, 'Vân Đồn: đánh thuyền lương');
             detail = 'Sức địch −3';
           }
           break;
@@ -957,7 +983,7 @@ function apply(s: GameState, a: Action) {
             if (q.id === p.id) continue;
             stealResources(q, p, 1);
           }
-          s.battle.troops[p.id] += 2;
+          s.battle.troops[p.id] += 1;
           break;
         }
         case 'haiBaTrung':

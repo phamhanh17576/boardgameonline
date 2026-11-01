@@ -1,4 +1,4 @@
-import type { BattleDef, BattleId, GeneralDef, SourceNote, StratDef, StratId, TitleDef, TitleId } from '../types';
+import type { GeneralDef, SourceNote, StratDef, StratId, TitleDef, TitleId } from '../types';
 
 const TT = (where: string): SourceNote => ({ tag: 'CS', source: `Đại Việt sử ký toàn thư, ${where}`, verified: true });
 const UNIT: SourceNote = { tag: 'TT', source: 'Binh chủng chung (không phải nhân vật lịch sử)', verified: true };
@@ -43,60 +43,7 @@ export const STRATS: Record<StratId, StratDef> = {
 export const STRAT_IDS = Object.keys(STRATS) as StratId[];
 
 // ---------------------------------------------------------------- Trận đánh
-export const BATTLES: Record<BattleId, BattleDef> = {
-  vanDon1288: {
-    id: 'vanDon1288',
-    name: 'Trận Vân Đồn',
-    year: 'Tháng Chạp năm Đinh Hợi (đầu năm 1288)',
-    enemy: 'Thủy quân và đoàn thuyền vận lương nhà Nguyên',
-    enemyCommander: 'Thủy quân Nguyên (Toàn thư không ghi tên người chỉ huy đoàn thuyền lương)',
-    ourCommander: 'Nhân Huệ Vương Trần Khánh Dư',
-    strengthPerPlayer: 8,
-    strengthBase: -8,
-    river: true,
-    tacticBase: { go: 2, lua: 1 },
-    tacticName: 'Mai phục đánh thuyền lương',
-    tacticWhy: 'Khánh Dư đoán quân giặc đã qua, thuyền vận lương ắt ở phía sau, bèn thu nhặt tàn quân chờ sẵn để đánh.',
-    rightHeroes: ['tranKhanhDu'],
-    intro: 'Lần thứ ba quân Nguyên sang. Thủy quân giặc phạm vào Vân Đồn; Phó tướng Trần Khánh Dư đánh bất lợi, Thượng hoàng sai trung sứ đến xích ông về. Khánh Dư xin hoãn hai ba ngày để lập công chuộc tội.',
-    dienBien: [
-      'Khánh Dư đoán biết quân giặc đã qua, thuyền vận lương ắt ở phía sau, bèn thu nhặt tàn quân chờ đợi.',
-      'Lát sau thuyền vận lương quả nhiên đến. Quân ta đánh tan, thu được lương thực khí giới của giặc nhiều không kể xiết, bắt sống cũng rất nhiều.',
-      'Thượng hoàng nói: "Thứ mà quân Nguyên trông cậy là lương thảo khí giới, nay đã bị ta lấy được." Rồi thả tù binh về doanh trại Nguyên báo tin; quân Nguyên quả nhiên rút lui.',
-    ],
-    yNghia: 'Đánh vào hậu cần của giặc. Toàn thư chép: năm ấy dân chúng không bị tàn phá thảm như năm trước, "Khánh Dư có dự công".',
-    note: TT('Bản kỷ q.5, Kỷ nhà Trần, Nhân Tông năm Trùng Hưng thứ 3'),
-    chain: { battle: 'bachDang1288', minusPerPlayer: 1, text: 'Giặc mất lương: Sức địch ở Bạch Đằng −1 mỗi người chơi.' },
-    rewardFirst: 5,
-    rewardSecond: 3,
-  },
-  bachDang1288: {
-    id: 'bachDang1288',
-    name: 'Trận Bạch Đằng',
-    year: 'Ngày 8 tháng 3 năm Mậu Tý (9/4/1288)',
-    enemy: 'Thủy quân Nguyên — Ô Mã Nhi, Áo Lỗ Xích, đoàn thuyền lương Trương Văn Hổ',
-    enemyCommander: 'Ô Mã Nhi, Áo Lỗ Xích, Trương Văn Hổ',
-    ourCommander: 'Hưng Đạo Vương Trần Quốc Tuấn',
-    strengthPerPlayer: 8,
-    strengthBase: -8,
-    river: true,
-    tacticBase: { go: 3, sat: 1 },
-    tacticName: 'Bãi cọc gỗ phủ cỏ',
-    tacticWhy: 'Hưng Đạo Vương cho cắm cọc ở sông Bạch Đằng, phủ cỏ lên trên; nhân lúc nước triều lên thì khiêu chiến giả thua; nước rút, thuyền giặc mắc cạn hết.',
-    rightHeroes: ['tranHungDao'],
-    intro: 'Quân Nguyên hội ở sông Bạch Đằng để đón thuyền lương của bọn Trương Văn Hổ, nhưng không gặp. Trước đó, Hưng Đạo Vương đã cho cắm cọc ở sông Bạch Đằng, phủ cỏ lên trên.',
-    dienBien: [
-      'Hôm ấy, nhân lúc nước triều lên, quân ta khiêu chiến rồi giả thua chạy; giặc kéo quân đuổi theo. Quân ta đánh hăng.',
-      'Nước rút, thuyền giặc mắc cạn hết. Nguyễn Khoái chỉ huy quân Thánh Dực dũng nghĩa bắt được Bình chương Áo Lỗ Xích. Quân của hai vua kéo đến đánh lớn; người Nguyên chết đuối nhiều không kể xiết, nước sông vì thế đỏ ngầu.',
-      'Khi Trương Văn Hổ đến, phục binh hai bờ đổ ra đánh. Nước triều rút rất nhanh, thuyền lương của Văn Hổ mắc trên cọc, lật đổ gần hết.',
-      'Đỗ Hành bắt được Ô Mã Nhi dâng lên Thượng hoàng. Thoát Hoan và A Thai dẫn quân trốn về.',
-    ],
-    yNghia: 'Chấm dứt cuộc xâm lược lần thứ ba của nhà Nguyên. Vua Nhân Tông có thơ: "Xã tắc lưỡng hồi lao thạch mã, Sơn hà thiên cổ điện kim âu" (Xã tắc hai phen chồn ngựa đá, Non sông nghìn thuở vững âu vàng).',
-    note: TT('Bản kỷ q.5, Kỷ nhà Trần, Nhân Tông năm Trùng Hưng thứ 4'),
-    rewardFirst: 6,
-    rewardSecond: 3,
-  },
-};
+export { BATTLES, BATTLE_IDS } from './battles';
 
 // ---------------------------------------------------------------- Danh hiệu
 export const TITLES: Record<TitleId, TitleDef> = {

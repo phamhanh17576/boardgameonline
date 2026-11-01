@@ -1,13 +1,26 @@
 // Phòng chơi chạy ngay trong trình duyệt (chơi với máy, không cần máy chủ).
 // Xử lý cùng bộ tin nhắn như Durable Object để giao diện dùng chung.
 import { applyAction, botAction, viewFor, waitingFor, type GameState } from '../engine';
-import { addBotSeat, canStart, cleanName, freeHeroes, startFromSeats, type ClientMsg, type Seat, type ServerMsg } from './protocol';
+import {
+  addBotSeat,
+  canStart,
+  cleanName,
+  cleanSettings,
+  DEFAULT_SETTINGS,
+  freeHeroes,
+  startFromSeats,
+  type ClientMsg,
+  type RoomSettings,
+  type Seat,
+  type ServerMsg,
+} from './protocol';
 
 const BOT_DELAY_MS = 750;
 
 export class LocalRoom {
   private seats: Seat[] = [];
   private game: GameState | null = null;
+  private settings: RoomSettings = DEFAULT_SETTINGS;
   private nextId = 1;
   private you = 'p0';
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -26,7 +39,7 @@ export class LocalRoom {
   }
 
   private push() {
-    this.emit({ t: 'lobby', lobby: { code: 'MAY', hostId: this.you, seats: this.seats, started: !!this.game } });
+    this.emit({ t: 'lobby', lobby: { code: 'MAY', hostId: this.you, seats: this.seats, started: !!this.game, settings: this.settings } });
     if (this.game) this.emit({ t: 'state', view: viewFor(this.game, this.you) });
   }
 
@@ -61,7 +74,7 @@ export class LocalRoom {
       case 'start': {
         const why = canStart(this.seats);
         if (why) return this.err(why);
-        this.game = startFromSeats(this.seats);
+        this.game = startFromSeats(this.seats, this.settings);
         break;
       }
       case 'action': {
@@ -71,6 +84,10 @@ export class LocalRoom {
         this.game = r.state;
         break;
       }
+      case 'settings':
+        if (this.game) return this.err('Ván đã bắt đầu.');
+        this.settings = cleanSettings(this.settings, msg.settings ?? {});
+        break;
       case 'backToLobby':
         this.game = null;
         break;

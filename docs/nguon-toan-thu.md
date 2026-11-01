@@ -94,3 +94,31 @@
 | **Nguyễn Khoái** | q.5 năm 1288: 阮蒯領聖翊勇義軍與賊戰，擒平章奥魯赤 *(chỉ huy quân Thánh Dực dũng nghĩa, bắt Áo Lỗ Xích ở Bạch Đằng)* |
 | **Quân "Sát Thát"** | q.5 năm 1285: 獲我軍，皆墨刺殺韃二字於臂 *(bắt được quân ta, thấy đều thích hai chữ "Sát Thát" vào cánh tay)* |
 | **Hội nghị Diên Hồng** (thẻ Kế sách) | q.5 tháng 12 năm 1284: 上皇召天下父老，會于延洪堦，賜食問計。皆曰戰，萬人同辝，如出一口。*(Thượng hoàng triệu phụ lão trong nước họp ở thềm điện Diên Hồng, ban yến, hỏi kế. Đều nói "Đánh!", muôn người cùng một lời như từ một miệng nói ra.)* |
+
+---
+
+## Các trận bổ sung (bản game nhiều trận)
+
+> Nguyên văn rút gọn. Phần dịch nghĩa nằm trong `src/engine/content/battles.ts` (mục "Diễn biến").
+
+| Trận | Nguồn | Nguyên văn (trích) |
+|---|---|---|
+| Khởi binh đánh Tô Định (40) | Toàn thư, Ngoại kỷ q.3 | 庚子元年春二月，王苦太守蘇定繩以法，及讐定之殺其夫，乃與其妹貳舉兵，攻陷州治。定奔還南海。九真、日南、合浦皆應之，畧定嶺南六十五城，自立為王。 |
+| Cửu Chân khởi binh (248) | Toàn thư, Ngoại kỷ q.4 | 後九真郡女趙嫗（嫗乳長三尺，施於背後。常乘象頭與敵交戰）聚眾攻掠郡縣。胤平之。 |
+| Lý Bí dựng nước Vạn Xuân (541–544) | Toàn thư, Ngoại kỷ q.4 | 交州刺史武林侯蕭諮以刻暴失眾心……諮覺之，賄輸于帝，奔還廣州。帝出據州城，即龍編也。／甲子……帝因勝敵，自稱南越帝……建國號曰萬春，望社稷至萬世也。 |
+| Đầm Dạ Trạch (547–550) | Toàn thư, Ngoại kỷ q.4 | 光復度不能支，乃退保夜澤……惟用獨木小舟篙行於水草之上乃可到……晝則泯絶煙火人跡，夜則以獨木船出兵擊覇先營……國人號夜澤王。 |
+| Bạch Đằng 938 | Toàn thư, Ngoại kỷ q.5 | 若使人先於海門潜植大杙鉄，其首冒之……遂植杙海口两徬。潮漲，權使人以輕舟挑戰，佯北以致之……潮退杙露……舟皆着杙以襨……擒弘操殺之。 |
+| Dẹp loạn 12 sứ quân (968) | Toàn thư, Bản kỷ q.1 | 以蘆花左右引之，象天子儀仗……凡征戰所過，易如破竹，號萬勝王。時十二使君自相䧺長……王一舉平之，遂自立爲帝。 |
+| Bạch Đằng – Chi Lăng 981 | Toàn thư, Bản kỷ q.1 | 劉澄至白藤江。帝自將禦之，使士卒植樁捍江，宋兵退，復至支陵江。帝令士卒詐降，以誘仁寳，因擒斬之。 |
+| Đánh thành Ung Châu (1075–1076) | Toàn thư, Bản kỷ q.3 | 命李常傑、宗亶領兵十餘萬擊之。水步並進。常傑陷欽、廉等州，亶圍邕州……知邕州蘇緘固守不下。我軍攻之四十餘日，囊土傅城而登城，遂陷。 |
+| Sông Như Nguyệt (1076–1077) | Toàn thư, Bản kỷ q.3 | 帝命李常傑領兵逆擊，至如月江大破之。宋兵死者千餘人。郭逵退……（註：世傳常傑沿江築柵固守……「南國山河南帝居……」） |
+| Đông Bộ Đầu (1258) | Toàn thư, Bản kỷ q.5 | 對曰：「臣首未至地，陛下無煩他慮。」……二十四日，帝及太子御樓船，進軍東步頭逆戰，大破之。 |
+| Chương Dương – Hàm Tử (1285) | Toàn thư, Bản kỷ q.5 | 上相光啓、懷文侯國瓚……率諸路民兵敗賊于京城、章陽等處。賊軍大潰。 |
+| Tốt Động – Chúc Động (1426) | Toàn thư, Bản kỷ q.10 | 數里伏兵，三面並起，奮擊於卒洞、祝洞等處，大破之，斬尙書陳洽……寕橋之水爲之不流……王通、馬騏等僅以身免，走還東関城。 |
+| Ải Chi Lăng (1427) | Toàn thư, Bản kỷ q.10 | 吾以逸待勞，蔑不勝矣。乃命……領精兵一萬，象五隻先潜伏於支棱隘以待之……大縱伏兵，四面俱起衝擊。賊軍大敗，斬柳昇於馬鞍山。 |
+| Vây thành Đông Quan (1426–1427) | Toàn thư, Bản kỷ q.10 | 賜廌侍坐於第二層，領㫖草徃復書。／帝與明總兵官……王通……會盟于城之南……時通等在城困迫，所恃者援兵，又爲我所敗，故講和乞㱕。 |
+| Ngọc Hồi – Đống Đa (1789) | **Khâm định Việt sử thông giám cương mục**, Chính biên q.47 | 文惠壤袂而起……以雄象百餘爲前行……羣馬皆驚嘶奔……賊以禾稈作大束，亂滚而前，勁兵隨之……岑宜棟屯于螺山（俗號棟多）……宜棟自縊……士毅……遂拔壘渡河而走。橋斷，死者無算。 |
+
+**Lưu ý nguồn:**
+- Toàn thư chép đến năm 1675 nên không có thời Tây Sơn. Trận năm 1789 lấy từ *Cương mục* do Quốc sử quán triều Nguyễn soạn. Sách này gọi quân Tây Sơn là "giặc" (賊); game dùng lời trung tính.
+- Trận **Rạch Gầm – Xoài Mút (1785)** tạm chưa đưa vào, vì *Cương mục* không chép và chưa tìm được bản *Đại Nam thực lục* để đối chiếu.

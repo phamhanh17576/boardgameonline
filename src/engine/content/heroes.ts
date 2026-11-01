@@ -81,7 +81,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
         note: TT('Bản kỷ q.5, năm Nhâm Ngọ 1282'),
       },
     ],
-    rightBattles: [],
+    rightBattles: ['chuongDuong1285'],
     quote: {
       text: '"Đoạt sáo Chương Dương độ, Cầm Hồ Hàm Tử quan, Thái bình tu trí lực, Vạn cổ thử giang san."',
       note: TT('Bản kỷ q.5, năm Ất Dậu 1285'),
@@ -101,25 +101,25 @@ export const HEROES: Record<HeroId, HeroDef> = {
     dsm: 12,
     passive: {
       name: 'Tay buôn Vân Đồn',
-      text: 'Được giữ tối đa 13 tài nguyên (người khác 10).',
+      text: 'Được giữ tối đa 14 tài nguyên (người khác 10).',
       why: 'Toàn thư chép ông từng bị tước hết tài sản, về Chí Linh sống bằng nghề bán than; khi trấn Vân Đồn thì buôn nón Ma Lôi thu lời lớn.',
       note: TT('Bản kỷ q.5, năm 1282 và 1288'),
     },
     ultimate: {
       name: 'Vân Đồn',
-      text: 'Chọn một: (a) Sức địch trận này −3 và bạn +2★; hoặc (b) lấy 3 tài nguyên của một người, không cần giao chiến.',
+      text: 'Chọn một: (a) Sức địch trận này −3 và bạn +3★; hoặc (b) lấy 3 tài nguyên của một người, không cần giao chiến.',
       why: 'Ông đoán quân giặc đã qua thì thuyền vận lương ắt ở sau, thu tàn quân chờ đánh, lấy được lương thực khí giới nhiều không kể xiết.',
       note: TT('Bản kỷ q.5, tháng Chạp năm Đinh Hợi (đầu 1288)'),
       needsTarget: true,
       options: [
-        { id: 'a', label: 'Đánh thuyền lương: Sức địch −3, +2★' },
+        { id: 'a', label: 'Đánh thuyền lương: Sức địch −3, +3★' },
         { id: 'b', label: 'Cướp 3 tài nguyên của một người' },
       ],
     },
     drawbacks: [
       {
         name: 'Tham bỉ',
-        text: 'Sau khi Thu thuế mà còn từ 8 tài nguyên trở lên: −1 Lòng dân.',
+        text: 'Sau khi Thu thuế mà còn từ 11 tài nguyên trở lên: −1 Lòng dân.',
         why: 'Toàn thư chép: "Khánh Dư tính tham bỉ, những nơi ông cai quản đều ghét."',
         note: TT('Bản kỷ q.5, tháng Chạp năm Đinh Hợi (đầu 1288)'),
       },
@@ -145,7 +145,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
     start: { troops: 1 },
     passive: {
       name: 'Phá cường địch, báo hoàng ân',
-      text: 'Mộ binh: +1 Quân.',
+      text: 'Mộ binh: +1 Quân. Đầu mỗi trận: +1 Quân.',
       why: 'Ông dẫn gia nô và thân thuộc hơn nghìn người, sửa sang khí giới, thuyền chiến, đề lên cờ sáu chữ "Phá cường địch, báo hoàng ân".',
       note: TT('Bản kỷ q.5, tháng 10 năm Nhâm Ngọ 1282'),
     },
@@ -163,7 +163,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
         note: TT('Bản kỷ q.5, tháng 10 năm Nhâm Ngọ 1282'),
       },
     ],
-    rightBattles: [],
+    rightBattles: ['chuongDuong1285'],
     quote: {
       text: '"Phá cường địch, báo hoàng ân" (破強敵，報皇恩) — sáu chữ trên lá cờ của Hoài Văn hầu.',
       note: TT('Bản kỷ q.5, tháng 10 năm Nhâm Ngọ 1282'),
@@ -189,7 +189,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
     },
     ultimate: {
       name: 'Thu xếp quốc sự',
-      text: 'Mỗi người khác đưa bạn 1 tài nguyên (loại họ có nhiều nhất); bạn được +2 Quân ở chiến trường.',
+      text: 'Mỗi người khác đưa bạn 1 tài nguyên (loại họ có nhiều nhất); bạn được +1 Quân ở chiến trường.',
       why: 'Toàn thư chép việc xếp đặt quốc sự đầu thời Trần "đều do Trần Thủ Độ làm cả".',
       note: TT('Bản kỷ q.5, lời bàn về Trần Thái Tông'),
     },
@@ -201,7 +201,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
         note: TT('Bản kỷ q.5, năm 1226 và 1232'),
       },
     ],
-    rightBattles: [],
+    rightBattles: ['dongBoDau1258'],
     quote: {
       text: '"Đầu thần chưa rơi xuống đất, xin bệ hạ đừng lo." (臣首未至地，陛下無煩他慮)',
       note: TT('Bản kỷ q.5, tháng Chạp năm Đinh Tỵ (đầu 1258)'),
@@ -239,7 +239,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
         note: TT('Ngoại kỷ q.3, năm Nhâm Dần (42)'),
       },
     ],
-    rightBattles: [],
+    rightBattles: ['haiBaTrung40'],
     quote: {
       text: 'Sử thần Lê Văn Hưu: "Trưng Trắc, Trưng Nhị là đàn bà, hô một tiếng mà các quận Cửu Chân, Nhật Nam, Hợp Phố cùng 65 thành ở Lĩnh Ngoại đều hưởng ứng."',
       note: TT('Ngoại kỷ q.3, lời bàn của Lê Văn Hưu'),
@@ -259,7 +259,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
     dsm: 12,
     passive: {
       name: 'Cưỡi đầu voi ra trận',
-      text: 'Khi Tranh công: +2 lực tấn công.',
+      text: 'Khi Tranh công: +2 lực tấn công; thắng thì được thêm 1 Chiến công (+1★).',
       why: 'Toàn thư chép bà "thường cưỡi đầu voi đánh nhau với giặc".',
       note: TT('Ngoại kỷ q.4, năm Mậu Thìn (248)'),
     },
@@ -271,13 +271,13 @@ export const HEROES: Record<HeroId, HeroDef> = {
     },
     drawbacks: [
       {
-        name: 'Lực lượng mỏng',
-        text: 'Mỗi lần Mộ binh tối đa 2 Quân.',
+        name: 'Nghĩa quân tự lực',
+        text: 'Đầu mỗi trận không được nhận Quân do triều đình cấp.',
         why: 'Toàn thư chép cuộc khởi nghĩa ở quận Cửu Chân bị thứ sử Lục Dận đàn áp.',
         note: TT('Ngoại kỷ q.4, năm Mậu Thìn (248)'),
       },
     ],
-    rightBattles: [],
+    rightBattles: ['baTrieu248'],
     quote: {
       text: '"Tôi muốn cưỡi cơn gió mạnh, đạp luồng sóng dữ, chém cá kình ở biển Đông…" (truyền thuyết)',
       note: LEGEND('Truyền thuyết dân gian (không có trong Toàn thư)'),
@@ -303,7 +303,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
     },
     ultimate: {
       name: 'Bình Ngô đại cáo',
-      text: 'Kích hoạt trong trận. Nếu thắng trận: +2★, thêm +1★ cho mỗi trận cả bàn đã thắng trước đó, và +1 Lòng dân.',
+      text: 'Kích hoạt trong trận. Nếu thắng trận: +2★ và +1 Lòng dân.',
       why: 'Năm 1428 "vua đã dẹp xong giặc Ngô, bá cáo khắp thiên hạ". Theo Ức Trai di tập, bài cáo do Nguyễn Trãi soạn.',
       note: TT('Bản kỷ q.10, năm Mậu Thân 1428'),
     },
@@ -315,7 +315,7 @@ export const HEROES: Record<HeroId, HeroDef> = {
         note: GAME,
       },
     ],
-    rightBattles: [],
+    rightBattles: ['dongQuan1427'],
     quote: {
       text: '"Việc nhân nghĩa cốt ở yên dân, quân điếu phạt trước lo trừ bạo." (仁義之舉，要在安民，吊伐之師，莫先去暴)',
       note: TT('Bản kỷ q.10, năm Mậu Thân 1428'),

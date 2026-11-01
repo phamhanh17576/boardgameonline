@@ -20,7 +20,26 @@ export type HeroId =
   | 'baTrieu'
   | 'nguyenTrai';
 
-export type BattleId = 'vanDon1288' | 'bachDang1288';
+export type BattleId =
+  | 'haiBaTrung40'
+  | 'baTrieu248'
+  | 'lyBi542'
+  | 'daTrach548'
+  | 'bachDang938'
+  | 'dinh968'
+  | 'chiLang981'
+  | 'ungChau1075'
+  | 'nhuNguyet1077'
+  | 'dongBoDau1258'
+  | 'chuongDuong1285'
+  | 'vanDon1288'
+  | 'bachDang1288'
+  | 'totDong1426'
+  | 'chiLang1427'
+  | 'dongQuan1427'
+  | 'ngocHoi1789';
+
+export type BattleTerrain = 'river' | 'pass' | 'citadel' | 'marsh' | 'plain';
 
 export type StratId = 'coHieu' | 'tiepVien' | 'vuonKhong' | 'muaMang' | 'dienHong' | 'renBinh';
 
@@ -109,12 +128,15 @@ export interface BattleDef {
   id: BattleId;
   name: string;
   year: string;
+  /** Dùng để xếp các trận theo thứ tự thời gian */
+  sortYear: number;
+  era: string;
+  terrain: BattleTerrain;
   enemy: string;
   enemyCommander: string;
   ourCommander: string;
-  /** Sức địch = strengthPerPlayer × số người + strengthBase */
-  strengthPerPlayer: number;
-  strengthBase: number;
+  /** Độ khó riêng của trận (cộng vào sức địch mỗi người chơi) */
+  difficulty: number;
   river: boolean;
   tacticBase: Partial<Resources>;
   tacticName: string;
@@ -321,6 +343,8 @@ export interface GameOptions {
   seed: number;
   players: PlayerSetup[];
   roundsPerBattle?: number;
+  /** Số trận rút ngẫu nhiên (mặc định 4) — bỏ qua nếu có battleOrder */
+  battleCount?: number;
   battleOrder?: BattleId[];
 }
 

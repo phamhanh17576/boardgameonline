@@ -5,6 +5,7 @@ import {
   STRATS,
   TITLES,
   combatBases,
+  enemyStrength,
   tacticRequirement,
   RES_KEYS,
   type GameView,
@@ -134,7 +135,7 @@ export function BattleIntroModal({ view }: { view: GameView }) {
   const ready = view.ready.includes(me.id);
   const req = tacticRequirement(asState(view));
   const waiting = view.players.filter((p) => !view.ready.includes(p.id));
-  const enemy = def.strengthPerPlayer * view.players.length + def.strengthBase + view.battle.enemyMod;
+  const enemy = enemyStrength(asState(view)).base;
   return (
     <div className="scroll-back">
       <div className="scroll">

@@ -6,11 +6,14 @@ import {
   addBotSeat,
   canStart,
   cleanName,
+  cleanSettings,
+  DEFAULT_SETTINGS,
   freeHeroes,
   normalizeCode,
   startFromSeats,
   type ClientMsg,
   type LobbyInfo,
+  type RoomSettings,
   type Seat,
   type ServerMsg,
 } from '../src/net/protocol';
@@ -31,6 +34,7 @@ interface RoomData {
   tokens: Record<string, string>; // token -> seatId
   game: GameState | null;
   nextId: number;
+  settings?: RoomSettings;
 }
 
 export default {
@@ -98,7 +102,7 @@ export class Room extends DurableObject<Env> {
 
   private lobbyInfo(): LobbyInfo {
     const d = this.data!;
-    return { code: d.code, hostId: d.hostId, seats: d.seats, started: !!d.game };
+    return { code: d.code, hostId: d.hostId, seats: d.seats, started: !!d.game, settings: d.settings ?? DEFAULT_SETTINGS };
   }
 
   private broadcast() {
@@ -193,7 +197,13 @@ export class Room extends DurableObject<Env> {
         if (d.game) return err('Ván đã bắt đầu.');
         const why = canStart(d.seats);
         if (why) return err(why);
-        d.game = startFromSeats(d.seats);
+        d.game = startFromSeats(d.seats, d.settings ?? DEFAULT_SETTINGS);
+        break;
+      }
+      case 'settings': {
+        if (!isHost) return err('Chỉ chủ phòng được đổi cài đặt.');
+        if (d.game) return err('Ván đã bắt đầu.');
+        d.settings = cleanSettings(d.settings ?? DEFAULT_SETTINGS, msg.settings ?? {});
         break;
       }
       case 'action': {

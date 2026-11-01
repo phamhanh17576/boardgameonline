@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { BATTLES, type BattleId, type GameView } from '../../engine';
+import { BATTLES, enemyStrength, type BattleId, type GameState, type GameView } from '../../engine';
 import { GOLD } from '../theme';
 import { useFxEvents } from './fxHooks';
 import { burst } from './Fx';
@@ -82,7 +82,7 @@ export function Battlefield({ view, low }: { view: GameView; low: boolean }) {
 
   const goCommitted = Object.values(view.battle.tactic).reduce((s, r) => s + r.go, 0);
   const stakeCount = isBachDang ? Math.min(36, 6 + goCommitted * 3) : 0;
-  const enemyGuess = def.strengthPerPlayer * view.players.length + def.strengthBase + view.battle.enemyMod;
+  const enemyGuess = enemyStrength(view as unknown as GameState).base;
   const shipCount = Math.max(3, Math.min(9, Math.round(enemyGuess / 6)));
 
   useFxEvents((e) => {

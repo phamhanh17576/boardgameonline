@@ -1,6 +1,7 @@
 // Giao thức WebSocket giữa trình duyệt và phòng chơi (Cloudflare Durable Object),
 // cùng logic sảnh chờ dùng chung cho chế độ online và chế độ chơi với máy.
 import {
+  BATTLE_COUNT_OPTIONS,
   HERO_IDS,
   MAX_PLAYERS,
   MIN_PLAYERS,
@@ -20,11 +21,19 @@ export interface Seat {
   connected: boolean;
 }
 
+export interface RoomSettings {
+  /** Số trận mỗi ván (rút ngẫu nhiên, xếp theo thứ tự năm) */
+  battleCount: number;
+}
+
+export const DEFAULT_SETTINGS: RoomSettings = { battleCount: 4 };
+
 export interface LobbyInfo {
   code: string;
   hostId: string | null;
   seats: Seat[];
   started: boolean;
+  settings: RoomSettings;
 }
 
 export type ClientMsg =
@@ -33,6 +42,7 @@ export type ClientMsg =
   | { t: 'addBot' }
   | { t: 'removeSeat'; id: string }
   | { t: 'start' }
+  | { t: 'settings'; settings: Partial<RoomSettings> }
   | { t: 'action'; action: Action }
   | { t: 'chat'; text: string }
   | { t: 'backToLobby' }
@@ -92,9 +102,16 @@ export function canStart(seats: Seat[]): string | null {
   return null;
 }
 
-export function startFromSeats(seats: Seat[], seed = randomSeed()): GameState {
+export function cleanSettings(cur: RoomSettings, patch: Partial<RoomSettings>): RoomSettings {
+  const next = { ...cur };
+  if (patch.battleCount !== undefined && BATTLE_COUNT_OPTIONS.includes(Number(patch.battleCount))) next.battleCount = Number(patch.battleCount);
+  return next;
+}
+
+export function startFromSeats(seats: Seat[], settings: RoomSettings = DEFAULT_SETTINGS, seed = randomSeed()): GameState {
   return createGame({
     seed,
+    battleCount: settings.battleCount,
     players: seats.map((s) => ({ id: s.id, name: s.name, heroId: s.heroId!, isBot: s.isBot })),
   });
 }
