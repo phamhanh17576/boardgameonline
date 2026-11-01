@@ -2,7 +2,9 @@
 
 > Bản thiết kế v0.2 · 01/11/2026 · thay cho bản nháp *Vạn Thắng Vương* v0.1 (thời 12 sứ quân giờ là một trận đánh trong game này).
 > **Chọn anh hùng → xây lãnh địa → chiêu mộ tướng → cùng giữ nước nhưng tranh nhau công trạng → ai nhiều Uy danh nhất thắng.**
-> 2–5 người · 60–75 phút · 12+ tuổi · thiết kế cho chơi online.
+> **4–6 người** · 60–75 phút · 12+ tuổi · thiết kế cho chơi online.
+>
+> 🎮 **Bản chơi thử online** (thời Trần: Vân Đồn + Bạch Đằng 1288, 8 anh hùng) nằm trong thư mục gốc của repo. Các con số trong bản thử đã được chỉnh lại sau mô phỏng 400 ván; nơi nào khác với tài liệu này thì **mã nguồn `src/engine/content/` là bản đúng**. Nội dung sử của bản thử đã đối chiếu nguyên văn Toàn thư: xem [nguon-toan-thu.md](../nguon-toan-thu.md).
 
 | Tài liệu | Nội dung |
 |---|---|
@@ -50,7 +52,7 @@
 
 ## 3. Chuẩn bị
 
-1. Mỗi người **chọn 1 Anh hùng**. Không ai được chọn trùng. Chơi online thì chọn lần lượt theo kiểu *draft*: người chọn cuối được thêm 1 🪙.
+1. Mỗi người **chọn 1 Anh hùng**. Không ai được chọn trùng. Thiếu người thì thêm **máy chơi cùng** cho đủ 4–6.
 2. Mỗi người nhận 3 ô khởi đầu (Ruộng, Rừng, Núi), **2 🌾, 1 🪙, 2 Quân**, cộng thêm thay đổi riêng nếu thẻ Anh hùng có ghi.
 3. Chia thẻ Trận đánh theo 4 thời đại. Mỗi thời đại **rút ngẫu nhiên 2 trận rồi xếp theo thứ tự năm**. Tổng cộng 8 trận.
    *(Chế độ "Sử thi": chơi đủ 18 trận, khoảng 2,5 giờ.)*
