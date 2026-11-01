@@ -3,6 +3,8 @@ import { normalizeCode, randomCode } from '../../net/protocol';
 import { useStore } from '../store';
 import { useUi } from './uiStore';
 
+const OFFLINE_ONLY = import.meta.env.MODE === 'single';
+
 export function Home() {
   const storedName = useStore((s) => s.name);
   const connectOnline = useStore((s) => s.connectOnline);
@@ -33,7 +35,7 @@ export function Home() {
         </label>
 
         <div className="home-actions">
-          {initialCode && (
+          {initialCode && !OFFLINE_ONLY && (
             <button className="btn red big" disabled={!nameOk} onClick={() => connectOnline(initialCode, name.trim())}>
               Vào phòng {initialCode}
             </button>
@@ -41,6 +43,12 @@ export function Home() {
           <button className={`btn big ${initialCode ? '' : 'gold'}`} disabled={!nameOk} onClick={() => startLocal(name.trim())}>
             Chơi thử với máy
           </button>
+          {OFFLINE_ONLY ? (
+            <p className="home-foot">
+              Đây là bản xem trước: chỉ chơi với máy. Bản chơi online nhiều người chạy trên Cloudflare (xem README trong repo).
+            </p>
+          ) : (
+          <>
           <div className="or">hoặc chơi online cùng bạn bè</div>
           <div className="join-row">
             <input value={code} maxLength={8} placeholder="Mã phòng" onChange={(e) => setCode(normalizeCode(e.target.value))} />
@@ -51,6 +59,8 @@ export function Home() {
           <button className="btn ghost" disabled={!nameOk} onClick={() => connectOnline(randomCode(), name.trim())}>
             Tạo phòng mới
           </button>
+          </>
+          )}
           {conn === 'failed' && (
             <p className="warn">
               Không kết nối được máy chủ phòng chơi. Bản online cần chạy trên Cloudflare (xem hướng dẫn trong README). Bạn vẫn có thể bấm

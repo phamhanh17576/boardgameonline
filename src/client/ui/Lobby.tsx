@@ -34,7 +34,7 @@ export function Lobby() {
           {mode === 'online' ? (
             <p>
               Mã phòng: <b className="code">{lobby.code}</b>{' '}
-              <button className="btn small ghost" onClick={() => navigator.clipboard?.writeText(link)}>
+              <button className="btn small ghost" onClick={() => navigator.clipboard?.writeText(link).catch(() => undefined)}>
                 Sao chép link mời
               </button>
             </p>

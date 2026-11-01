@@ -15,6 +15,9 @@ Board game chiến thuật **4–6 người** chơi online. Mỗi người là m
 - **Học sử khi chơi**: mỗi trận có cuộn giấy *Bối cảnh* và *Sử ký* trích Toàn thư. Mỗi kỹ năng có mục "Vì sao" kèm nguồn. Mọi thông tin gắn nhãn **Chính sử** hoặc **Tương truyền**.
 - Tự giảm hiệu ứng trên điện thoại. Thêm `?hieuung=cao` hoặc `?hieuung=thap` vào link để chỉnh tay.
 
+## Bản xem trước (chơi với máy)
+`npm run build:single` tạo một file duy nhất `dist-single/index.html`. File này chạy được mà không cần máy chủ (chỉ chế độ chơi với máy). Bản này đã được đăng lên claude.ai để chơi thử ngay.
+
 ## Chạy trên máy của bạn
 Cần Node.js 20 trở lên.
 

@@ -11,6 +11,7 @@ import {
   RES_KEYS,
   type GameView,
 } from '../../engine';
+import { useRef } from 'react';
 import { useMe, useStore } from '../store';
 import { RES_ICON } from '../theme';
 import { asPlayer, asState, ResRow } from './common';
@@ -26,6 +27,16 @@ export function TopBar({ view }: { view: GameView }) {
   const pct = Math.min(100, Math.round((power / Math.max(1, enemy.final)) * 100));
   const ui = useUi();
   const leave = useStore((st) => st.leave);
+  const toast = useStore((st) => st.showToast);
+  const armed = useRef(0);
+  const onLeave = () => {
+    // Bấm 2 lần trong 3 giây để rời (không dùng confirm() vì một số nơi chặn hộp thoại)
+    if (Date.now() - armed.current < 3000) leave();
+    else {
+      armed.current = Date.now();
+      toast('Bấm ⎋ lần nữa để rời ván.');
+    }
+  };
   return (
     <div className="topbar">
       <div className="tb-battle">
@@ -67,7 +78,7 @@ export function TopBar({ view }: { view: GameView }) {
         <button className="icon-btn" title="Luật chơi" onClick={() => ui.setHelp(true)}>
           ?
         </button>
-        <button className="icon-btn" title="Rời ván" onClick={() => confirm('Rời ván chơi?') && leave()}>
+        <button className="icon-btn" title="Rời ván" onClick={onLeave}>
           ⎋
         </button>
       </div>
