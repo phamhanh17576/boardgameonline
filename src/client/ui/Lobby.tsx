@@ -1,7 +1,10 @@
-import { HERO_IDS, HEROES, MAX_PLAYERS, MIN_PLAYERS } from '../../engine';
-import { canStart } from '../../net/protocol';
+import { BATTLE_COUNT_OPTIONS, BATTLE_IDS, HERO_IDS, HEROES, MAX_PLAYERS, MIN_PLAYERS } from '../../engine';
+import { canStart, DEFAULT_SETTINGS } from '../../net/protocol';
 import { useStore } from '../store';
-import { HeroCard } from './common';
+import { Avatar, HeroCard } from './common';
+import { Icon } from './Icon';
+
+const minutes = (n: number) => `${n * 10}–${n * 13} phút`;
 
 export function Lobby() {
   const lobby = useStore((s) => s.lobby);
@@ -10,12 +13,13 @@ export function Lobby() {
   const send = useStore((s) => s.send);
   const leave = useStore((s) => s.leave);
   const conn = useStore((s) => s.conn);
+  const toast = useStore((s) => s.showToast);
   if (!lobby || !you) {
     return (
       <div className="center-msg">
         <div className="spinner" />
         <p>{conn === 'closed' ? 'Mất kết nối, đang thử lại…' : 'Đang vào phòng…'}</p>
-        <button className="btn ghost" onClick={leave}>
+        <button className="btn" onClick={leave}>
           Quay lại
         </button>
       </div>
@@ -24,90 +28,133 @@ export function Lobby() {
   const isHost = lobby.hostId === you;
   const me = lobby.seats.find((s) => s.id === you);
   const why = canStart(lobby.seats);
+  const settings = lobby.settings ?? DEFAULT_SETTINGS;
   const link = `${location.origin}${location.pathname}?phong=${lobby.code}`;
+  const copy = () => {
+    navigator.clipboard
+      ?.writeText(link)
+      .then(() => toast('Đã sao chép link mời.'))
+      .catch(() => toast(`Link mời: ${link}`));
+  };
 
   return (
-    <div className="lobby">
-      <header className="lobby-head">
-        <div>
-          <h1>Sảnh chờ</h1>
-          {mode === 'online' ? (
-            <p>
-              Mã phòng: <b className="code">{lobby.code}</b>{' '}
-              <button className="btn small ghost" onClick={() => navigator.clipboard?.writeText(link).catch(() => undefined)}>
-                Sao chép link mời
-              </button>
-            </p>
-          ) : (
-            <p>Chơi thử với máy, không cần mạng.</p>
-          )}
-        </div>
-        <button className="btn ghost" onClick={leave}>
-          Rời phòng
-        </button>
-      </header>
+    <main className="lobby">
+      <div className="lobby-inner">
+        <header className="lobby-head">
+          <div>
+            <h1>Sảnh chờ</h1>
+            {mode === 'online' ? (
+              <p>
+                Mã phòng <b className="code">{lobby.code}</b>{' '}
+                <button className="btn small" onClick={copy}>
+                  Sao chép link mời
+                </button>
+              </p>
+            ) : (
+              <p>Chơi thử với máy, không cần mạng.</p>
+            )}
+          </div>
+          <button className="btn" onClick={leave}>
+            <Icon name="roi" size={18} /> Rời phòng
+          </button>
+        </header>
 
-      <section className="seats">
-        <h2>
-          Người chơi ({lobby.seats.length}/{MAX_PLAYERS}) <span className="muted">· cần {MIN_PLAYERS}–{MAX_PLAYERS} người</span>
-        </h2>
-        <div className="seat-list">
-          {lobby.seats.map((s) => {
-            const h = s.heroId ? HEROES[s.heroId] : null;
-            return (
-              <div key={s.id} className={`seat${s.id === you ? ' me' : ''}`} style={{ ['--hc' as string]: h?.color ?? '#555' }}>
-                <div className="seat-seal">{h ? h.name.split(' ').slice(-1)[0] : '?'}</div>
-                <div className="seat-info">
-                  <b>{s.name}</b>
-                  {s.id === lobby.hostId && <span className="tag">Chủ phòng</span>}
-                  {s.isBot && <span className="tag">Máy</span>}
-                  {!s.connected && <span className="tag warn">Mất kết nối</span>}
-                  <div className="muted">{h ? h.name : 'Chưa chọn anh hùng'}</div>
-                </div>
-                {isHost && s.isBot && (
-                  <button className="btn small ghost" onClick={() => send({ t: 'removeSeat', id: s.id })}>
-                    Bỏ
-                  </button>
-                )}
+        <div className="lobby-cols">
+          <aside className="lobby-side">
+            <section className="sheet">
+              <h2>
+                Người chơi {lobby.seats.length}/{MAX_PLAYERS}
+              </h2>
+              <p className="muted small">Cần từ {MIN_PLAYERS} đến {MAX_PLAYERS} người. Thiếu người thì thêm máy chơi cùng.</p>
+              <div className="seat-list">
+                {lobby.seats.map((s) => {
+                  const h = s.heroId ? HEROES[s.heroId] : null;
+                  return (
+                    <div key={s.id} className={`seat${s.id === you ? ' me' : ''}`}>
+                      {s.heroId ? <Avatar heroId={s.heroId} size={44} /> : <span className="seat-empty" />}
+                      <div className="seat-info">
+                        <b>
+                          {s.name}
+                          {s.id === lobby.hostId && <span className="tag cham">Chủ phòng</span>}
+                          {s.isBot && <span className="tag">Máy</span>}
+                          {!s.connected && <span className="tag son">Mất kết nối</span>}
+                        </b>
+                        <span className="muted small">{h ? h.name : 'Chưa chọn anh hùng'}</span>
+                      </div>
+                      {isHost && s.isBot && (
+                        <button className="btn small ghost" onClick={() => send({ t: 'removeSeat', id: s.id })}>
+                          Bỏ
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-        <div className="lobby-actions">
-          {isHost && (
-            <button className="btn" disabled={lobby.seats.length >= MAX_PLAYERS} onClick={() => send({ t: 'addBot' })}>
-              + Thêm máy chơi cùng
-            </button>
-          )}
-          {isHost ? (
-            <button className="btn gold big" disabled={!!why} onClick={() => send({ t: 'start' })} title={why ?? ''}>
-              Bắt đầu ván
-            </button>
-          ) : (
-            <span className="muted">Đợi chủ phòng bắt đầu…</span>
-          )}
-          {why && <span className="muted small">{why}</span>}
-        </div>
-      </section>
+              {isHost && (
+                <button className="btn" disabled={lobby.seats.length >= MAX_PLAYERS} onClick={() => send({ t: 'addBot' })}>
+                  Thêm máy chơi cùng
+                </button>
+              )}
+            </section>
 
-      <section>
-        <h2>Chọn anh hùng {me?.heroId ? <span className="muted">· bạn đã chọn {HEROES[me.heroId].name}</span> : null}</h2>
-        <div className="hero-grid">
-          {HERO_IDS.map((h) => {
-            const owner = lobby.seats.find((s) => s.heroId === h);
-            const takenBy = owner && owner.id !== you ? owner.name : null;
-            return (
-              <HeroCard
-                key={h}
-                heroId={h}
-                taken={takenBy && !(mode === 'local' && owner?.isBot) ? takenBy : null}
-                picked={owner?.id === you}
-                onPick={() => send({ t: 'pickHero', heroId: h })}
-              />
-            );
-          })}
+            <section className="sheet">
+              <h2>Số trận trong ván</h2>
+              <div className="seg-row" role="radiogroup" aria-label="Số trận">
+                {BATTLE_COUNT_OPTIONS.map((n) => (
+                  <button
+                    key={n}
+                    role="radio"
+                    aria-checked={settings.battleCount === n}
+                    className={`chip${settings.battleCount === n ? ' on' : ''}`}
+                    disabled={!isHost}
+                    onClick={() => send({ t: 'settings', settings: { battleCount: n } })}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <p className="small">
+                Khoảng {minutes(settings.battleCount)}. Game rút ngẫu nhiên {settings.battleCount} trong {BATTLE_IDS.length} trận có thật rồi xếp theo thứ tự năm.
+                {!isHost && ' Chủ phòng chọn số trận.'}
+              </p>
+            </section>
+
+            <section className="sheet son">
+              {isHost ? (
+                <>
+                  <button className="btn son big" disabled={!!why} onClick={() => send({ t: 'start' })}>
+                    Bắt đầu ván
+                  </button>
+                  {why && <p className="small">{why}</p>}
+                </>
+              ) : (
+                <p>Đợi chủ phòng bắt đầu ván.</p>
+              )}
+            </section>
+          </aside>
+
+          <section>
+            <h2 style={{ marginBottom: 12, color: 'var(--cham)' }}>
+              Chọn anh hùng {me?.heroId ? <span className="muted small">— bạn đang chọn {HEROES[me.heroId].name}</span> : null}
+            </h2>
+            <div className="hero-grid">
+              {HERO_IDS.map((h) => {
+                const owner = lobby.seats.find((s) => s.heroId === h);
+                const takenBy = owner && owner.id !== you ? owner.name : null;
+                return (
+                  <HeroCard
+                    key={h}
+                    heroId={h}
+                    taken={takenBy && !(mode === 'local' && owner?.isBot) ? takenBy : null}
+                    picked={owner?.id === you}
+                    onPick={() => send({ t: 'pickHero', heroId: h })}
+                  />
+                );
+              })}
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
+      </div>
+    </main>
   );
 }

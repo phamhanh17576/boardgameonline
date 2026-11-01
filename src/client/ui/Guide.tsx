@@ -13,7 +13,8 @@ import {
   type GameView,
 } from '../../engine';
 import { useMe } from '../store';
-import { RES_ICON, RES_NAME, TERRAIN_COLOR, TERRAIN_NAME } from '../theme';
+import { RES_NAME, TERRAIN_COLOR, TERRAIN_NAME } from '../theme';
+import { Icon, type IconName } from './Icon';
 import { asPlayer, asState } from './common';
 import { useUi } from './uiStore';
 
@@ -24,13 +25,13 @@ function nextTip(view: GameView, me: Me): { title: string; body: ReactNode } {
   const name = (pid: string) => view.players.find((p) => p.id === pid)?.name ?? '';
   if (view.phase === 'gameOver') return { title: 'Ván đã kết thúc', body: 'Xem bảng điểm chung cuộc. Chủ phòng có thể bấm "Ván mới".' };
   if (view.phase === 'battleIntro') return { title: 'Chuẩn bị xuất trận', body: 'Đọc bối cảnh trận trên cuộn giấy rồi bấm "Xuất trận!". Ván bắt đầu khi mọi người đã sẵn sàng.' };
-  if (view.phase === 'battleResult') return { title: 'Tổng kết trận', body: 'Xem ai được bao nhiêu ★ và đọc Sử ký, rồi bấm nút đỏ để sang bước tiếp.' };
+  if (view.phase === 'battleResult') return { title: 'Tổng kết trận', body: 'Xem ai được bao nhiêu Uy danh và đọc Sử ký, rồi bấm nút đỏ để sang bước tiếp.' };
   if (view.phase === 'combat' && view.combat) {
     const c = view.combat;
     if (c.attackerId === me.id || c.defenderId === me.id) {
       return {
         title: 'Bạn đang giao chiến!',
-        body: 'Kéo thanh chọn số ⛏️ Sắt muốn bỏ ra rồi bấm "Chốt bí mật". Đối thủ không thấy con số này. Sắt đã bỏ thì mất, dù thắng hay thua.',
+        body: 'Kéo thanh chọn số Sắt muốn bỏ ra rồi bấm "Chốt bí mật". Đối thủ không thấy con số này. Sắt đã bỏ thì mất, dù thắng hay thua.',
       };
     }
     return { title: 'Có người đang giao chiến', body: `${name(c.attackerId)} đang tấn công ${name(c.defenderId)}. Chờ hai bên chốt Sắt.` };
@@ -52,31 +53,31 @@ function nextTip(view: GameView, me: Me): { title: string; body: ReactNode } {
   const p = asPlayer(me);
   const affordable = [...view.market[1], ...view.market[2], ...view.market[3], ...me.reserved].find((g) => canAfford(p, generalCost(p, g)));
   if (last && (me.reserve > 0 || canTactic.length > 0)) {
-    return { title: 'Vòng cuối của trận!', body: 'Bấm 🚩 Điều quân ngay: quân còn trong tay sẽ không được tính khi tổng kết trận.' };
+    return { title: 'Vòng cuối của trận!', body: 'Bấm Điều quân ngay: quân còn trong tay sẽ không được tính khi tổng kết trận.' };
   }
   if (me.reserve >= 2) {
-    return { title: `Bạn có ${me.reserve} Quân trong tay`, body: 'Bấm 🚩 Điều quân để đưa quân ra chiến trường. Ai đóng góp nhiều nhất khi thắng trận sẽ được nhiều ★ nhất.' };
+    return { title: `Bạn có ${me.reserve} Quân trong tay`, body: 'Bấm Điều quân để đưa quân ra chiến trường. Ai đóng góp nhiều nhất khi thắng trận sẽ được nhiều Uy danh nhất.' };
   }
   if (canTactic.length > 0) {
     return {
       title: 'Góp chiến thuật lịch sử',
-      body: `Trận này còn cần ${canTactic.map((r) => `${remaining[r]} ${RES_ICON[r]} ${RES_NAME[r]}`).join(', ')}. Vào 🚩 Điều quân để góp: đủ thì Sức địch giảm 30%, bạn được thêm +1★.`,
+      body: `Trận này còn cần ${canTactic.map((r) => `${remaining[r]} ${RES_NAME[r]}`).join(', ')}. Vào Điều quân để góp: đủ thì Sức địch giảm 30%, bạn được thêm thêm 1 Uy danh.`,
     };
   }
-  if (me.res.lua >= 2) return { title: 'Thiếu quân', body: 'Bấm 🪖 Mộ binh: mỗi 1 🌾 Lúa đổi được 1 Quân.' };
-  if (affordable) return { title: 'Đủ tiền chiêu mộ tướng', body: `Bấm 🧑‍✈️ Chiêu hiền: bạn mua được ${GENERALS[affordable].name}. Tướng giúp các lần mua sau rẻ hơn và cộng thêm Võ.` };
-  if (resTotal(me.res) < 4) return { title: 'Cần tài nguyên', body: 'Bấm 🌾 Thu thuế để nhận tài nguyên từ các vùng đất của bạn.' };
-  return { title: 'Mở rộng lãnh địa', body: 'Bấm 🌱 Khai hoang: đặt 2 ô đất mới, ghép cùng loại liền nhau để thu thuế được nhiều hơn.' };
+  if (me.res.lua >= 2) return { title: 'Thiếu quân', body: 'Bấm Mộ binh: mỗi 1 Lúa đổi được 1 Quân.' };
+  if (affordable) return { title: 'Đủ tiền chiêu mộ tướng', body: `Bấm Chiêu hiền: bạn mua được ${GENERALS[affordable].name}. Tướng giúp các lần mua sau rẻ hơn và cộng thêm Võ.` };
+  if (resTotal(me.res) < 4) return { title: 'Cần tài nguyên', body: 'Bấm Thu thuế để nhận tài nguyên từ các vùng đất của bạn.' };
+  return { title: 'Mở rộng lãnh địa', body: 'Bấm Khai hoang: đặt 2 ô đất mới, ghép cùng loại liền nhau để thu thuế được nhiều hơn.' };
 }
 
-const ACTIONS: [string, string, string][] = [
-  ['🌱', 'Khai hoang', 'Lấy 2 ô đất đặt vào lãnh địa.'],
-  ['🌾', 'Thu thuế', 'Nhận tài nguyên từ các vùng đất.'],
-  ['🧑‍✈️', 'Chiêu hiền', 'Mua tướng: giảm giá vĩnh viễn, thêm Võ và ★.'],
-  ['🪖', 'Mộ binh', '1 Lúa = 1 Quân.'],
-  ['🚩', 'Điều quân', 'Đưa quân ra trận, góp tài nguyên chiến thuật.'],
-  ['⚔️', 'Tấn công', 'Phá quân hoặc cướp kho người khác.'],
-  ['📜', 'Mưu kế', 'Rút 2 Kế sách, giữ 1.'],
+const ACTIONS: [IconName, string, string][] = [
+  ['khaiHoang', 'Khai hoang', 'Lấy 2 ô đất đặt vào lãnh địa.'],
+  ['thuThue', 'Thu thuế', 'Nhận tài nguyên từ các vùng đất.'],
+  ['chieuHien', 'Chiêu hiền', 'Mua tướng: rẻ dần, thêm Võ và Uy danh.'],
+  ['moBinh', 'Mộ binh', '1 Lúa đổi 1 Quân.'],
+  ['dieuQuan', 'Điều quân', 'Đưa quân ra trận, góp tài nguyên chiến thuật.'],
+  ['tanCong', 'Tấn công', 'Phá quân hoặc cướp kho người khác.'],
+  ['muuKe', 'Mưu kế', 'Rút 2 kế sách, giữ 1.'],
 ];
 
 export function GuideTab() {
@@ -84,7 +85,7 @@ export function GuideTab() {
   const setOpen = useUi((s) => s.setGuide);
   return (
     <button className={`guide-tab${open ? ' open' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-controls="guide-drawer" title="Hướng dẫn (phím H)">
-      <span className="guide-tab-ic">📖</span>
+      <Icon name="sach" size={20} />
       <span className="guide-tab-label">Hướng dẫn</span>
     </button>
   );
@@ -117,9 +118,11 @@ export function GuideDrawer({ view }: { view: GameView }) {
   return (
     <aside id="guide-drawer" className={`guide${open ? ' open' : ''}`} aria-hidden={!open} aria-label="Hướng dẫn chơi">
       <div className="guide-head">
-        <h3>📖 Hướng dẫn</h3>
-        <button className="modal-x" onClick={() => setOpen(false)} aria-label="Đóng hướng dẫn">
-          ×
+        <h3>
+          <Icon name="sach" /> Hướng dẫn
+        </h3>
+        <button className="x-btn" onClick={() => setOpen(false)} aria-label="Đóng hướng dẫn">
+          <Icon name="dong" />
         </button>
       </div>
       <div className="guide-body">
@@ -135,34 +138,40 @@ export function GuideDrawer({ view }: { view: GameView }) {
         </section>
 
         <details className="guide-sec" open>
-          <summary>🎯 Mục tiêu</summary>
+          <summary>
+            <Icon name="star" size={18} /> Mục tiêu
+          </summary>
           <p>
-            Cả bàn cùng đánh 2 trận (Vân Đồn rồi Bạch Đằng). Thắng trận thì ai góp nhiều quân nhất được nhiều <b>★ Uy danh</b> nhất. Hết ván, <b>ai nhiều ★ nhất thắng</b>.
+            Cả bàn cùng đánh một chuỗi trận có thật. Thắng trận thì ai góp nhiều quân nhất được nhiều <b>Uy danh</b> nhất. Hết ván, <b>ai nhiều Uy danh nhất thắng</b>.
           </p>
         </details>
 
         <details className="guide-sec" open>
-          <summary>🔁 Một lượt của bạn</summary>
+          <summary>
+            <Icon name="ketThuc" size={18} /> Một lượt của bạn
+          </summary>
           <ol>
             <li>
               Chọn <b>1 hành động chính</b> ở thanh dưới.
             </li>
             <li>
-              Có thể thêm 1 <b>🎴 Kế sách</b> và <b>✨ Tuyệt kỹ</b> (1 lần mỗi trận).
+              Có thể thêm 1 <b>Kế sách</b> và <b>Tuyệt kỹ</b> (1 lần mỗi trận).
             </li>
             <li>
-              Bấm <b>⏭ Kết thúc lượt</b>.
+              Bấm <b>Kết thúc lượt</b>.
             </li>
           </ol>
           <p className="muted small">Mỗi trận có 3 vòng; mỗi vòng ai cũng được 1 lượt.</p>
         </details>
 
         <details className="guide-sec">
-          <summary>🧭 7 hành động chính</summary>
+          <summary>
+            <Icon name="dieuQuan" size={18} /> 7 hành động chính
+          </summary>
           <ul className="guide-acts">
             {ACTIONS.map(([ic, n, d]) => (
               <li key={n}>
-                <span className="ga-ic">{ic}</span>
+                <Icon name={ic} size={18} />
                 <span>
                   <b>{n}</b> — {d}
                 </span>
@@ -172,18 +181,20 @@ export function GuideDrawer({ view }: { view: GameView }) {
         </details>
 
         <details className="guide-sec">
-          <summary>🗺️ Lãnh địa và tài nguyên</summary>
+          <summary>
+            <Icon name="ruong" size={18} /> Lãnh địa và tài nguyên
+          </summary>
           <ul className="guide-terr">
             {(['ruong', 'rung', 'nui', 'lang', 'song'] as const).map((t) => (
               <li key={t}>
                 <span className="gt-swatch" style={{ background: TERRAIN_COLOR[t] }} />
                 <b>{TERRAIN_NAME[t]}</b>
                 <span className="muted">
-                  {t === 'ruong' && '→ 🌾 Lúa (kề Sông +1)'}
-                  {t === 'rung' && '→ 🪵 Gỗ'}
-                  {t === 'nui' && '→ ⛏️ Sắt · 3 ô liền = Thành lũy (+2 Thủ)'}
-                  {t === 'lang' && '→ 🪙 Tiền (kề 2 loại đất)'}
-                  {t === 'song' && '3 ô liền = Thủy trại (+1 Võ)'}
+                  {t === 'ruong' && 'cho Lúa, kề Sông thêm 1'}
+                  {t === 'rung' && 'cho Gỗ'}
+                  {t === 'nui' && 'cho Sắt; 3 ô liền là thành lũy, thêm 2 Thủ'}
+                  {t === 'lang' && 'cho Tiền khi kề 2 loại đất khác'}
+                  {t === 'song' && '3 ô liền là thủy trại, thêm 1 Võ ở trận sông'}
                 </span>
               </li>
             ))}
@@ -192,31 +203,37 @@ export function GuideDrawer({ view }: { view: GameView }) {
         </details>
 
         <details className="guide-sec">
-          <summary>⚔️ Đánh nhau</summary>
+          <summary>
+            <Icon name="tanCong" size={18} /> Đánh nhau
+          </summary>
           <ul>
             <li>
               <b>Tranh công</b>: loại 2 Quân của họ ở chiến trường.
             </li>
             <li>
-              <b>Đột kích</b>: cướp 3 tài nguyên; bạn mất 1 Lòng dân (trừ khi đánh người dẫn đầu 👑).
+              <b>Đột kích</b>: cướp 3 tài nguyên; bạn mất 1 Lòng dân, trừ khi đánh người dẫn đầu.
             </li>
-            <li>Hai bên bí mật bỏ ⛏️ Sắt. Lực lớn hơn hẳn mới thắng; hòa thì bên phòng thủ giữ được.</li>
+            <li>Hai bên bí mật bỏ Sắt. Lực lớn hơn hẳn mới thắng; hòa thì bên phòng thủ giữ được.</li>
             <li>Không được đánh cùng một người 2 lượt liền.</li>
           </ul>
         </details>
 
         <details className="guide-sec">
-          <summary>🏆 Tính điểm cuối ván</summary>
+          <summary>
+            <Icon name="chienCong" size={18} /> Tính điểm cuối ván
+          </summary>
           <ul>
-            <li>★ từ trận đánh, tướng, chiến công.</li>
+            <li>Uy danh từ trận đánh, tướng, chiến công.</li>
             <li>3 Danh hiệu của ván (ví dụ: nhiều chiến công nhất).</li>
-            <li>Mỗi vùng đất từ 5 ô: +2★.</li>
-            <li>Lòng dân ≥ 8: +4★ · ≤ 2: −3★.</li>
+            <li>Mỗi vùng đất từ 5 ô: thêm 2.</li>
+            <li>Lòng dân từ 8 trở lên: thêm 4; từ 2 trở xuống: trừ 3.</li>
           </ul>
         </details>
 
         <details className="guide-sec">
-          <summary style={{ ['--hc' as string]: hero.color }}>✨ Anh hùng của bạn: {hero.name}</summary>
+          <summary>
+            <Icon name="tuyetKy" size={18} /> Anh hùng của bạn: {hero.name}
+          </summary>
           <p>
             <b>Nội tại — {hero.passive.name}:</b> {hero.passive.text}
           </p>

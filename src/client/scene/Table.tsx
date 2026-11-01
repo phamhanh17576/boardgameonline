@@ -1,96 +1,70 @@
-import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
-import { GOLD, LACQUER_BLACK, LACQUER_RED } from '../theme';
+import { CHAM, DIEP, HOE, INK, LA, PAPER, SON } from '../theme';
+import { canvasTexture, cloud, Ink, speckle, toon } from './toon';
 
-/** Mặt bàn sơn mài: nền đen bóng, viền son đỏ, nẹp vàng. */
-export function Table({ low }: { low: boolean }) {
-  const goldMat = useMemo(() => new THREE.MeshStandardMaterial({ color: GOLD, metalness: 1, roughness: 0.28, emissive: '#3a2400', emissiveIntensity: 0.25 }), []);
-  return (
-    <group>
-      {/* Mặt bàn */}
-      <mesh position={[0, -0.32, 0]} receiveShadow>
-        <cylinderGeometry args={[15.5, 15.8, 0.6, 96]} />
-        <meshPhysicalMaterial color={LACQUER_BLACK} roughness={0.25} metalness={0.1} clearcoat={1} clearcoatRoughness={0.08} />
-      </mesh>
-      {/* Lớp son đỏ */}
-      <mesh position={[0, -0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <ringGeometry args={[12.6, 15.1, 128]} />
-        <meshPhysicalMaterial color={LACQUER_RED} roughness={0.3} clearcoat={1} clearcoatRoughness={0.1} />
-      </mesh>
-      {/* Nẹp vàng */}
-      {[12.55, 15.1, 15.6].map((r, i) => (
-        <mesh key={i} position={[0, i === 2 ? -0.05 : 0.0, 0]} rotation={[-Math.PI / 2, 0, 0]} material={goldMat}>
-          <torusGeometry args={[r, i === 2 ? 0.09 : 0.045, 8, 160]} />
-        </mesh>
-      ))}
-      {/* Hoa văn vàng trên viền: các ô "triện" */}
-      <Ornaments goldMat={goldMat} />
-      {!low && <GoldLeaf count={110} />}
-    </group>
-  );
-}
-
-function Ornaments({ goldMat }: { goldMat: THREE.Material }) {
-  const items = useMemo(() => {
-    const out: { pos: [number, number, number]; rot: number }[] = [];
-    const n = 36;
-    for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2;
-      out.push({ pos: [Math.cos(a) * 13.85, 0.01, Math.sin(a) * 13.85], rot: -a });
-    }
-    return out;
-  }, []);
-  return (
-    <group>
-      {items.map((it, i) => (
-        <group key={i} position={it.pos} rotation={[0, it.rot, 0]}>
-          <mesh rotation={[-Math.PI / 2, 0, Math.PI / 4]} material={goldMat}>
-            <torusGeometry args={[0.32, 0.03, 4, 4]} />
-          </mesh>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} material={goldMat}>
-            <circleGeometry args={[0.07, 12]} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-/** Lá vàng bay lơ lửng trên sa bàn. */
-function GoldLeaf({ count }: { count: number }) {
-  const ref = useRef<THREE.InstancedMesh>(null!);
-  const seeds = useMemo(
+/** Bàn gỗ trải một tờ bản đồ in khắc trên giấy dó. */
+export function Table() {
+  const map = useMemo(
     () =>
-      Array.from({ length: count }, () => ({
-        x: (Math.random() - 0.5) * 30,
-        y: Math.random() * 9 + 0.5,
-        z: (Math.random() - 0.5) * 26,
-        s: 0.05 + Math.random() * 0.09,
-        sp: 0.15 + Math.random() * 0.35,
-        rx: Math.random() * 6,
-        ry: Math.random() * 6,
-      })),
-    [count],
+      canvasTexture(2048, 2048, (g) => {
+        const S = 2048;
+        g.fillStyle = PAPER;
+        g.fillRect(0, 0, S, S);
+        speckle(g, S, S, 26000);
+        speckle(g, S, S, 6000, 'rgba(255,255,255,0.22)'); // điệp lấp lánh
+        const c = S / 2;
+        // khung tròn hai lớp như mép tranh
+        g.strokeStyle = INK;
+        g.lineWidth = 10;
+        g.beginPath();
+        g.arc(c, c, S * 0.475, 0, Math.PI * 2);
+        g.stroke();
+        g.lineWidth = 3;
+        g.beginPath();
+        g.arc(c, c, S * 0.455, 0, Math.PI * 2);
+        g.stroke();
+        // dải hoa văn sóng nước quanh viền
+        g.lineWidth = 3.5;
+        for (let i = 0; i < 72; i++) {
+          const a = (i / 72) * Math.PI * 2;
+          const r = S * 0.465;
+          const x = c + Math.cos(a) * r;
+          const y = c + Math.sin(a) * r;
+          g.save();
+          g.translate(x, y);
+          g.rotate(a + Math.PI / 2);
+          g.strokeStyle = i % 2 ? CHAM : SON;
+          g.beginPath();
+          g.arc(0, 0, 10, Math.PI, 0);
+          g.stroke();
+          g.restore();
+        }
+        // mây cuộn ở bốn góc trong
+        const clouds: [number, number, string][] = [
+          [0.24, 0.26, HOE],
+          [0.74, 0.22, SON],
+          [0.2, 0.74, LA],
+          [0.78, 0.76, CHAM],
+        ];
+        for (const [x, y, col] of clouds) cloud(g, x * S, y * S, 1.6, col);
+      }),
+    [],
   );
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime;
-    seeds.forEach((s, i) => {
-      s.y -= s.sp * dt * 0.6;
-      if (s.y < 0.1) s.y = 9 + Math.random() * 2;
-      dummy.position.set(s.x + Math.sin(t * 0.4 + i) * 0.6, s.y, s.z + Math.cos(t * 0.3 + i) * 0.5);
-      dummy.rotation.set(s.rx + t * s.sp * 2, s.ry + t * 0.7, t * 0.5);
-      dummy.scale.setScalar(s.s);
-      dummy.updateMatrix();
-      ref.current.setMatrixAt(i, dummy.matrix);
-    });
-    ref.current.instanceMatrix.needsUpdate = true;
-  });
   return (
-    <instancedMesh ref={ref} args={[undefined, undefined, count]}>
-      <planeGeometry args={[1, 0.7]} />
-      <meshStandardMaterial color="#f3cf6b" metalness={1} roughness={0.25} emissive="#a06a10" emissiveIntensity={0.9} side={THREE.DoubleSide} />
-    </instancedMesh>
+    <group>
+      {/* mặt bàn gỗ */}
+      <mesh position={[0, -0.55, 0]} receiveShadow material={toon('#8a5a32')}>
+        <cylinderGeometry args={[16.6, 16.9, 0.9, 64]} />
+        <Ink w={2} />
+      </mesh>
+      {/* tờ bản đồ */}
+      <mesh position={[0, -0.09, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[16, 96]} />
+        <meshToonMaterial map={map} color={DIEP} />
+      </mesh>
+    </group>
   );
 }
+
+export { THREE };

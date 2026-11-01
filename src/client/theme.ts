@@ -1,11 +1,23 @@
 import type { Res, Terrain } from '../engine';
+import type { IconName } from './ui/Icon';
+
+// Bảng màu lấy từ chất liệu tranh Đông Hồ: giấy dó, điệp, mực than lá tre,
+// xanh chàm, đỏ son, vàng hoè, xanh lá.
+export const INK = '#1d1914';
+export const PAPER = '#e7d8b8';
+export const PAPER_DARK = '#d6c39b';
+export const DIEP = '#f6efdf';
+export const CHAM = '#23415e';
+export const SON = '#b83a2b';
+export const HOE = '#e2a72e';
+export const LA = '#4f7a3f';
 
 export const TERRAIN_COLOR: Record<Terrain, string> = {
-  ruong: '#d8a23a',
-  rung: '#2e6b4e',
-  nui: '#7a726a',
-  song: '#1f5a8a',
-  lang: '#a8322d',
+  ruong: HOE,
+  rung: LA,
+  nui: '#8a7a62',
+  song: '#2f5d86',
+  lang: SON,
 };
 
 export const TERRAIN_NAME: Record<Terrain, string> = {
@@ -16,22 +28,17 @@ export const TERRAIN_NAME: Record<Terrain, string> = {
   lang: 'Làng',
 };
 
-export const TERRAIN_ICON: Record<Terrain, string> = {
-  ruong: '🌾',
-  rung: '🌲',
-  nui: '⛰️',
-  song: '🌊',
-  lang: '🏘️',
+export const TERRAIN_ICON: Record<Terrain, IconName> = {
+  ruong: 'ruong',
+  rung: 'rung',
+  nui: 'nui',
+  song: 'song',
+  lang: 'lang',
 };
 
 export const RES_NAME: Record<Res, string> = { lua: 'Lúa', go: 'Gỗ', sat: 'Sắt', tien: 'Tiền' };
-export const RES_ICON: Record<Res, string> = { lua: '🌾', go: '🪵', sat: '⛏️', tien: '🪙' };
-export const RES_COLOR: Record<Res, string> = { lua: '#e9c46a', go: '#a0703a', sat: '#9aa4ad', tien: '#f2c14e' };
-
-export const GOLD = '#d9a53a';
-export const GOLD_BRIGHT = '#f6d27a';
-export const LACQUER_RED = '#7a1712';
-export const LACQUER_BLACK = '#140b08';
+export const RES_ICON: Record<Res, IconName> = { lua: 'lua', go: 'go', sat: 'sat', tien: 'tien' };
+export const RES_COLOR: Record<Res, string> = { lua: '#c98a12', go: '#7a4b22', sat: '#4a5560', tien: '#9a6a12' };
 
 export function isLowPower(): boolean {
   try {
