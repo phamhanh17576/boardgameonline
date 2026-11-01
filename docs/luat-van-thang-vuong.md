@@ -1,5 +1,7 @@
 # VẠN THẮNG VƯƠNG — Loạn 12 Sứ Quân
 
+> ⚠️ **Bản nháp cũ (v0.1).** Đã được thay bằng [Hào Khí Ngàn Năm](hao-khi-ngan-nam/README.md). Thời 12 sứ quân nay là một trận đánh trong game mới.
+
 > Bản thiết kế luật v0.1 · 01/11/2026
 > **Đấu trí – chiến lược – tính toán – tấn công nhau – ai nhiều điểm nhất thắng.**
 > 2–5 người · 45–60 phút · 12+ tuổi · thiết kế cho chơi online.
