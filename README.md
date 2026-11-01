@@ -1,5 +1,7 @@
 # Hào Khí Ngàn Năm — Board game online 3D về lịch sử Việt Nam
 
+🎮 **Chơi ngay:** https://hao-khi-ngan-nam.hao-khi-ngan-nam.workers.dev
+
 Board game chiến thuật **4–6 người** chơi online. Mỗi người là một anh hùng trong sử Việt, cùng nhau đánh các trận có thật nhưng **tranh nhau công trạng**. Ai có nhiều **Uy danh ★** nhất thì thắng. Nội dung sử trích từ **Đại Việt sử ký toàn thư**.
 
 **Bản chơi thử hiện tại:** thời Trần, gồm 2 trận **Vân Đồn** và **Bạch Đằng 1288**, với 8 anh hùng (Trần Hưng Đạo, Trần Quang Khải, Trần Khánh Dư, Trần Quốc Toản, Trần Thủ Độ, Hai Bà Trưng, Bà Triệu, Nguyễn Trãi).
