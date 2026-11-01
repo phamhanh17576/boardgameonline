@@ -15,6 +15,7 @@ import {
   HeroInfoModal,
   Toast,
 } from './ui/Modals';
+import { GuideDrawer, GuideTab } from './ui/Guide';
 import { PanelHost } from './ui/Panels';
 import { useUi } from './ui/uiStore';
 
@@ -41,6 +42,8 @@ export function App() {
         <TopBar view={view} />
         <PlayersStrip view={view} />
         <PanelHost view={view} />
+        <GuideDrawer view={view} />
+        <GuideTab />
         <MyBar view={view} />
         {showLog && <LogDrawer view={view} />}
         <CombatModal view={view} />
