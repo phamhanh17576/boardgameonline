@@ -13,8 +13,20 @@ const D = 7.2; // bề sâu
 const HIGH = 0.06; // mặt nước lúc triều lên
 const LOW = -0.32; // lúc triều rút
 const STAKE_BATTLES = new Set(['bachDang938', 'bachDang1288', 'chiLang981']);
+const RIVER_D = 2.9; // bề rộng lòng sông
+const MARSH_D = 3.6;
+const BED = -0.4; // đáy sông
+const LIFT = 0.35; // sa bàn kê cao hơn mặt bàn để lòng sông không chìm dưới bàn
 
 type Anim = { t0: number; won: boolean; active: boolean };
+
+/** Mực nước: thắng thì triều rút dần trong 2,4 giây. */
+function tideY(a: Anim, now: number, marsh: boolean): number {
+  if (!(a.active && a.won)) return HIGH;
+  const p = Math.min(1, (now - a.t0) / 2.4);
+  const e = p * p * (3 - 2 * p);
+  return HIGH + ((marsh ? -0.16 : LOW) - HIGH) * e;
+}
 
 export function Battlefield({ view, low }: { view: GameView; low: boolean }) {
   const def = BATTLES[view.battle.id];
@@ -22,7 +34,7 @@ export function Battlefield({ view, low }: { view: GameView; low: boolean }) {
   const clock = useRef(0);
   const enemy = enemyStrength(view as unknown as GameState).base;
   const goCommitted = Object.values(view.battle.tactic).reduce((a, r) => a + (r?.go ?? 0), 0);
-  const stakes = STAKE_BATTLES.has(def.id) ? Math.min(30, 6 + goCommitted * 3) : 0;
+  const stakes = STAKE_BATTLES.has(def.id) ? Math.min(30, 10 + goCommitted * 2) : 0;
 
   useFxEvents((e) => {
     if (e.type === 'battleStart') anim.current = { t0: clock.current, won: false, active: false };
@@ -51,18 +63,18 @@ export function Battlefield({ view, low }: { view: GameView; low: boolean }) {
   const enemyCount = Math.max(5, Math.min(18, Math.round(enemy / 3)));
 
   return (
-    <group key={def.id}>
-      <Diorama terrain={def.terrain} />
+    <group key={def.id} position={[0, LIFT, 0]}>
+      <Diorama terrain={def.terrain} gap={water ? (def.terrain === 'marsh' ? MARSH_D : RIVER_D) : 0} />
       <BackPeaks seed={def.sortYear} />
-      {water && <Water terrain={def.terrain} anim={anim} clock={clock} red={def.id === 'bachDang1288'} />}
+      {water && <Water terrain={def.terrain} anim={anim} clock={clock} />}
       {def.terrain === 'marsh' && <Reeds low={low} />}
-      {stakes > 0 && <Stakes count={stakes} anim={anim} clock={clock} />}
+      {stakes > 0 && <Stakes count={stakes} />}
       {def.terrain === 'pass' && <Pass />}
       {def.terrain === 'citadel' && <Citadel anim={anim} clock={clock} />}
       {def.terrain === 'plain' && <Fields />}
       {!water && <Trees seed={def.sortYear} />}
       <Enemy count={enemyCount} onWater={water} anim={anim} clock={clock} />
-      {water && <OurBoats />}
+      {water && <OurBoats anim={anim} clock={clock} marsh={def.terrain === 'marsh'} />}
     </group>
   );
 }
@@ -77,7 +89,7 @@ const LAND_BASE: Record<BattleTerrain, string> = {
   plain: '#d3bb6e',
 };
 
-function Diorama({ terrain }: { terrain: BattleTerrain }) {
+function Diorama({ terrain, gap }: { terrain: BattleTerrain; gap: number }) {
   const tex = useMemo(
     () =>
       canvasTexture(1024, 648, (g) => {
@@ -126,15 +138,55 @@ function Diorama({ terrain }: { terrain: BattleTerrain }) {
   );
   return (
     <group>
-      <mesh position={[0, -0.3, 0]} receiveShadow castShadow material={toon('#7a4b2a')}>
+      {/* đế gỗ: có sông thì đế hạ thấp, hai bờ là hai khối đất */}
+      <mesh position={[0, gap > 0 ? BED - 0.25 : -0.3, 0]} receiveShadow castShadow material={toon('#7a4b2a')}>
         <boxGeometry args={[W + 0.5, 0.5, D + 0.5]} />
         <Ink w={1.5} />
       </mesh>
-      <mesh position={[0, -0.045, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[W, D]} />
-        <meshToonMaterial map={tex} />
-      </mesh>
+      {gap > 0 &&
+        [-1, 1].map((sd) => {
+          const bd = (D - gap) / 2 + 0.25;
+          const h = -0.05 - BED;
+          return (
+            <mesh key={sd} position={[0, BED + h / 2, sd * (gap / 2 + bd / 2)]} receiveShadow castShadow material={toon('#7a4b2a')}>
+              <boxGeometry args={[W + 0.5, h, bd]} />
+              <Ink w={1.2} />
+            </mesh>
+          );
+        })}
+      {gap > 0 ? (
+        <>
+          {/* hai bờ đất, giữa là lòng sông thấp hơn */}
+          <LandStrip tex={tex} z0={-D / 2} z1={-gap / 2} />
+          <LandStrip tex={tex} z0={gap / 2} z1={D / 2} />
+          <mesh position={[0, BED + 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={toon('#9c8058')}>
+            <planeGeometry args={[W + 0.5, gap]} />
+          </mesh>
+        </>
+      ) : (
+        <mesh position={[0, -0.045, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[W, D]} />
+          <meshToonMaterial map={tex} />
+        </mesh>
+      )}
     </group>
+  );
+}
+
+/** Một dải đất (z0 → z1) dùng đúng phần tương ứng của texture mặt sa bàn. */
+function LandStrip({ tex, z0, z1 }: { tex: THREE.Texture; z0: number; z1: number }) {
+  const t = useMemo(() => {
+    const c = tex.clone();
+    c.repeat.set(1, (z1 - z0) / D);
+    c.offset.set(0, (D / 2 - z1) / D);
+    c.needsUpdate = true;
+    return c;
+  }, [tex, z0, z1]);
+  return (
+    <mesh position={[0, -0.045, (z0 + z1) / 2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[W, z1 - z0]} />
+      <meshToonMaterial map={t} />
+    </mesh>
   );
 }
 
@@ -192,17 +244,7 @@ function BackPeaks({ seed }: { seed: number }) {
 
 /* ---------- nước ---------- */
 
-function Water({
-  terrain,
-  anim,
-  clock,
-  red,
-}: {
-  terrain: BattleTerrain;
-  anim: React.MutableRefObject<Anim>;
-  clock: React.MutableRefObject<number>;
-  red: boolean;
-}) {
+function Water({ terrain, anim, clock }: { terrain: BattleTerrain; anim: React.MutableRefObject<Anim>; clock: React.MutableRefObject<number> }) {
   const marsh = terrain === 'marsh';
   const base = marsh ? '#4f6a4c' : '#2f5d86';
   const tex = useMemo(() => {
@@ -210,58 +252,47 @@ function Water({
       g.fillStyle = base;
       g.fillRect(0, 0, 512, 256);
       g.strokeStyle = marsh ? 'rgba(230,220,170,0.55)' : 'rgba(246,239,223,0.7)';
-      g.lineWidth = 3;
+      g.lineWidth = 4;
       // sóng vảy cá
-      for (let row = 0; row < 9; row++) {
-        const y = 16 + row * 28;
-        const off = row % 2 ? 16 : 0;
-        for (let x = -32 + off; x < 540; x += 32) {
+      for (let row = 0; row < 5; row++) {
+        const y = 30 + row * 52;
+        const off = row % 2 ? 32 : 0;
+        for (let x = -64 + off; x < 576; x += 64) {
           g.beginPath();
-          g.arc(x, y, 14, Math.PI, 0);
+          g.arc(x, y, 26, Math.PI, 0);
+          g.stroke();
+          g.beginPath();
+          g.arc(x, y, 14, Math.PI * 1.15, Math.PI * 1.85);
           g.stroke();
         }
       }
     });
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
-    t.repeat.set(4, 1.4);
+    t.repeat.set(2.2, 0.9);
     return t;
   }, [base, marsh]);
   const surf = useRef<THREE.Mesh>(null!);
   const mat = useRef<THREE.MeshToonMaterial>(null!);
-  const baseCol = useMemo(() => new THREE.Color('#ffffff'), []);
-  const redCol = useMemo(() => new THREE.Color('#d98b7a'), []);
-  const depth = marsh ? 3.6 : 2.9;
+  const depth = marsh ? MARSH_D : RIVER_D;
   useFrame((_, dt) => {
     tex.offset.x += dt * 0.05;
     const a = anim.current;
     const t = clock.current - a.t0;
-    let y = HIGH;
-    if (a.active) {
-      const p = Math.min(1, t / 2.4);
-      const e = p * p * (3 - 2 * p);
-      y = HIGH + ((marsh ? -0.1 : LOW) - HIGH) * e;
-    }
+    const y = tideY(a, clock.current, marsh);
     surf.current.position.y = y;
-    if (red && a.active && a.won) {
-      const p = Math.min(1, Math.max(0, (t - 1) / 2));
-      mat.current.color.lerpColors(baseCol, redCol, p);
-    } else mat.current.color.copy(baseCol);
+    // nước cạn thì trong hơn để thấy lòng sông và bãi cọc
+    mat.current.opacity = 0.94 - 0.3 * Math.min(1, (HIGH - y) / (HIGH - LOW));
   });
   return (
     <group>
-      {/* lòng sông */}
-      <mesh position={[0, -0.36, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[W, depth]} />
-        <meshToonMaterial color="#6b5a3e" />
-      </mesh>
       <mesh ref={surf} position={[0, HIGH, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[W, depth]} />
         <meshToonMaterial ref={mat} map={tex} transparent opacity={0.94} />
       </mesh>
       {/* nét mực bờ sông */}
       {[-depth / 2, depth / 2].map((z) => (
-        <mesh key={z} position={[0, 0.0, z]} material={toon(INK)}>
-          <boxGeometry args={[W, 0.08, 0.06]} />
+        <mesh key={z} position={[0, -0.03, z]} material={toon(INK)}>
+          <boxGeometry args={[W, 0.04, 0.05]} />
         </mesh>
       ))}
     </group>
@@ -297,8 +328,8 @@ function Reeds({ low }: { low: boolean }) {
 
 /* ---------- cọc gỗ ---------- */
 
-function Stakes({ count, anim, clock }: { count: number; anim: React.MutableRefObject<Anim>; clock: React.MutableRefObject<number> }) {
-  const ref = useRef<THREE.Group>(null!);
+/** Cọc nhọn cắm lòng sông: lúc triều lên chỉ nhô đầu cọc, triều rút mới lộ cả bãi. */
+function Stakes({ count }: { count: number }) {
   const items = useMemo(() => {
     const out: [number, number][] = [];
     const rows = 2;
@@ -310,18 +341,12 @@ function Stakes({ count, anim, clock }: { count: number; anim: React.MutableRefO
     }
     return out;
   }, [count]);
-  useFrame(() => {
-    // khi triều rút, đầu cọc lộ ra (cọc đứng yên, nước hạ)
-    const a = anim.current;
-    if (!ref.current) return;
-    ref.current.position.y = a.active ? 0 : -0.08;
-    void clock;
-  });
   return (
-    <group ref={ref}>
+    <group>
       {items.map(([x, z], i) => (
-        <mesh key={i} position={[x, -0.1, z]} rotation={[0.25, 0, (i % 3) * 0.05]} material={toon('#5a3a1e')} castShadow>
-          <coneGeometry args={[0.06, 0.62, 5]} />
+        <mesh key={i} position={[x, BED + 0.34, z]} rotation={[0.3, 0, ((i % 3) - 1) * 0.08]} material={toon('#a8743e')} castShadow>
+          <coneGeometry args={[0.07, 0.78, 5]} />
+          <Ink w={0.6} />
         </mesh>
       ))}
     </group>
@@ -591,9 +616,9 @@ const shipHullGeo = (() => {
   return g;
 })();
 
-function Ship({ sail = '#6e6a62' }: { sail?: string }) {
+function Ship({ sail = '#6e6a62', scale = 1, flip = false }: { sail?: string; scale?: number; flip?: boolean }) {
   return (
-    <group>
+    <group scale={[flip ? -scale : scale, scale, scale]}>
       <mesh geometry={shipHullGeo} material={toon('#3a3029')} castShadow>
         <Ink w={0.8} />
       </mesh>
@@ -666,14 +691,14 @@ function Enemy({
       if (!g) return;
       const bob = onWater ? Math.sin(s.clock.elapsedTime * 1.4 + i) * 0.02 : 0;
       g.position.set(u.x, (onWater ? HIGH : 0) + bob, u.z);
-      g.rotation.set(0, onWater ? Math.PI / 2 : 0, 0);
+      g.rotation.set(0, 0, 0);
       if (!a.active) return;
       const p = Math.min(1, Math.max(0, (t - 0.8 - u.delay) / 1.2));
       const e = p * p * (3 - 2 * p);
       if (a.won) {
         if (onWater) {
           g.rotation.z = u.side * 1.0 * e;
-          g.position.y = HIGH + (LOW - 0.25 - HIGH) * e;
+          g.position.y = HIGH + (BED + 0.02 - HIGH) * e;
         } else {
           g.rotation.x = -1.45 * e;
         }
@@ -686,18 +711,18 @@ function Enemy({
     <group>
       {units.map((u, i) => (
         <group key={i} ref={(el) => (refs.current[i] = el)} position={[u.x, 0, u.z]}>
-          {onWater ? <Ship /> : <Soldier body="#4a5560" hat="#2a2a2a" scale={1.6} flag={i % 4 === 0 ? '#2a2a2a' : undefined} />}
+          {onWater ? <Ship scale={1.35} flip={i % 2 === 1} /> : <Soldier body="#4a5560" hat="#2a2a2a" scale={1.6} flag={i % 4 === 0 ? '#2a2a2a' : undefined} />}
         </group>
       ))}
     </group>
   );
 }
 
-function OurBoats() {
+function OurBoats({ anim, clock, marsh }: { anim: React.MutableRefObject<Anim>; clock: React.MutableRefObject<number>; marsh: boolean }) {
   const xs = [-4.2, -2.4, -0.6, 1.2, 3.0, 4.6];
   const ref = useRef<THREE.Group>(null!);
   useFrame((s) => {
-    if (ref.current) ref.current.position.y = HIGH + Math.sin(s.clock.elapsedTime * 1.2) * 0.015;
+    if (ref.current) ref.current.position.y = tideY(anim.current, clock.current, marsh) + Math.sin(s.clock.elapsedTime * 1.2) * 0.015;
   });
   return (
     <group ref={ref}>

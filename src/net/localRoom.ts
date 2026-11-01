@@ -1,6 +1,6 @@
 // Phòng chơi chạy ngay trong trình duyệt (chơi với máy, không cần máy chủ).
 // Xử lý cùng bộ tin nhắn như Durable Object để giao diện dùng chung.
-import { applyAction, botAction, viewFor, waitingFor, type GameState } from '../engine';
+import { applyAction, BATTLE_IDS, botAction, viewFor, waitingFor, type BattleId, type GameState } from '../engine';
 import {
   addBotSeat,
   canStart,
@@ -74,7 +74,7 @@ export class LocalRoom {
       case 'start': {
         const why = canStart(this.seats);
         if (why) return this.err(why);
-        this.game = startFromSeats(this.seats, this.settings);
+        this.game = startFromSeats(this.seats, this.settings, undefined, forcedBattles());
         break;
       }
       case 'action': {
@@ -120,5 +120,18 @@ export class LocalRoom {
       this.push();
       this.schedule();
     }, BOT_DELAY_MS);
+  }
+}
+
+/** Chơi với máy: có thể chỉ định trận qua địa chỉ, ví dụ ?tran=bachDang1288,chiLang1427 (giáo viên dạy đúng bài). */
+function forcedBattles(): BattleId[] | undefined {
+  try {
+    const loc = (globalThis as unknown as { location?: { search: string } }).location;
+    const raw = loc ? new URLSearchParams(loc.search).get('tran') : null;
+    if (!raw) return undefined;
+    const ids = raw.split(',').filter((x): x is BattleId => (BATTLE_IDS as string[]).includes(x));
+    return ids.length ? ids : undefined;
+  } catch {
+    return undefined;
   }
 }

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import {
   BATTLES,
   HEROES,
@@ -49,8 +49,17 @@ export function TopBar({ view }: { view: GameView }) {
     }
   };
   const round = Math.min(view.round, view.roundsPerBattle);
+  // ghi chiều cao thanh trên vào biến CSS để dải người chơi (điện thoại) nằm ngay bên dưới
+  const barRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--tb-h', `${Math.ceil(el.getBoundingClientRect().height)}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
-    <div className="topbar">
+    <div className="topbar" ref={barRef}>
       <section className="sheet tb-battle" aria-label="Trận hiện tại">
         <div className="tb-name">{def.name}</div>
         <div className="tb-year">{def.year}</div>

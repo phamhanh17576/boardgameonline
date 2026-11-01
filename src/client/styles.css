@@ -691,6 +691,7 @@ details.more[open] > summary {
 /* bảng trận (trên trái) */
 .topbar {
   position: absolute;
+  z-index: 5;
   top: max(10px, env(safe-area-inset-top));
   left: max(10px, env(safe-area-inset-left, 0px));
   right: max(10px, env(safe-area-inset-right, 0px));
@@ -820,6 +821,7 @@ details.more[open] > summary {
 /* người chơi (cột trái) */
 .players-strip {
   position: absolute;
+  z-index: 5;
   top: calc(max(10px, env(safe-area-inset-top)) + 104px);
   left: max(10px, env(safe-area-inset-left, 0px));
   display: flex;
@@ -873,6 +875,7 @@ details.more[open] > summary {
 /* thanh của mình (dưới) */
 .mybar {
   position: absolute;
+  z-index: 5;
   left: max(10px, env(safe-area-inset-left, 0px));
   right: max(10px, env(safe-area-inset-right, 0px));
   bottom: max(10px, env(safe-area-inset-bottom));
@@ -1921,6 +1924,9 @@ details.more[open] > summary {
     padding: 6px 10px 8px;
     max-width: none;
   }
+  .tb-progress > * {
+    white-space: nowrap;
+  }
   .tb-name {
     font-size: 1.1em;
   }
@@ -1935,7 +1941,7 @@ details.more[open] > summary {
     height: 34px;
   }
   .players-strip {
-    top: calc(max(10px, env(safe-area-inset-top)) + 158px);
+    top: calc(max(10px, env(safe-area-inset-top)) + var(--tb-h, 158px) + 6px);
     left: max(10px, env(safe-area-inset-left, 0px));
     right: max(10px, env(safe-area-inset-right, 0px));
     width: auto;

@@ -24,7 +24,7 @@ type Me = NonNullable<ReturnType<typeof useMe>>;
 function nextTip(view: GameView, me: Me): { title: string; body: ReactNode } {
   const name = (pid: string) => view.players.find((p) => p.id === pid)?.name ?? '';
   if (view.phase === 'gameOver') return { title: 'Ván đã kết thúc', body: 'Xem bảng điểm chung cuộc. Chủ phòng có thể bấm "Ván mới".' };
-  if (view.phase === 'battleIntro') return { title: 'Chuẩn bị xuất trận', body: 'Đọc bối cảnh trận trên cuộn giấy rồi bấm "Xuất trận!". Ván bắt đầu khi mọi người đã sẵn sàng.' };
+  if (view.phase === 'battleIntro') return { title: 'Chuẩn bị xuất trận', body: 'Đọc bối cảnh trận trên cuộn giấy rồi bấm "Xuất trận". Ván bắt đầu khi mọi người đã sẵn sàng.' };
   if (view.phase === 'battleResult') return { title: 'Tổng kết trận', body: 'Xem ai được bao nhiêu Uy danh và đọc Sử ký, rồi bấm nút đỏ để sang bước tiếp.' };
   if (view.phase === 'combat' && view.combat) {
     const c = view.combat;

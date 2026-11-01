@@ -1,5 +1,5 @@
 // Bàn của mỗi người chơi: khay gỗ lục giác, ô đất tô màu Đông Hồ, tượng đứng in tranh anh hùng.
-import { Billboard, Html, useTexture } from '@react-three/drei';
+import { Html, useTexture } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -83,7 +83,7 @@ export function PlayerBoard({
       ))}
       {/* tượng đứng in tranh */}
       <Standee heroId={p.heroId} active={active} position={[0, 0.12, 2.4]} />
-      <Html position={[0, 2.25, 2.4]} center distanceFactor={14} zIndexRange={[15, 5]} style={{ pointerEvents: 'none' }}>
+      <Html position={[0, 2.25, 2.4]} center distanceFactor={14} zIndexRange={[3, 1]} style={{ pointerEvents: 'none' }}>
         <div className={`name-plate${active ? ' active' : ''}${isMe ? ' me' : ''}`}>
           <Avatar heroId={p.heroId} size={30} />
           <div>
@@ -106,10 +106,18 @@ function Standee({ heroId, active, position }: { heroId: HeroId; active: boolean
     tex.anisotropy = 4;
   }, [tex]);
   const lift = useRef<THREE.Group>(null!);
+  const face = useRef<THREE.Group>(null!);
+  const tmp = useMemo(() => new THREE.Vector3(), []);
   useFrame((s, dt) => {
-    if (!lift.current) return;
+    if (!lift.current || !face.current) return;
     const target = active ? 0.12 + Math.sin(s.clock.elapsedTime * 3) * 0.04 : 0;
     lift.current.position.y += (target - lift.current.position.y) * Math.min(1, dt * 8);
+    // chỉ xoay quanh trục đứng để mặt tranh luôn hướng về người xem
+    const parent = face.current.parent;
+    if (!parent) return;
+    tmp.copy(s.camera.position);
+    parent.worldToLocal(tmp);
+    face.current.rotation.y = Math.atan2(tmp.x, tmp.z);
   });
   const S = 1.25;
   const color = HEROES[heroId].color;
@@ -123,7 +131,7 @@ function Standee({ heroId, active, position }: { heroId: HeroId; active: boolean
       <mesh position={[0, 0.17, 0]} material={toon(color)}>
         <cylinderGeometry args={[0.44, 0.46, 0.04, 20]} />
       </mesh>
-      <Billboard lockX lockZ>
+      <group ref={face}>
         <group ref={lift}>
           <group position={[0, 0.2 + S / 2 + 0.06, 0]}>
             {/* khung mực + viền màu anh hùng */}
@@ -144,7 +152,7 @@ function Standee({ heroId, active, position }: { heroId: HeroId; active: boolean
             </mesh>
           </group>
         </group>
-      </Billboard>
+      </group>
     </group>
   );
 }

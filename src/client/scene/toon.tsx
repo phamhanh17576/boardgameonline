@@ -21,7 +21,8 @@ export function toon(color: string, opts: { transparent?: boolean; opacity?: num
   const key = `${color}|${opts.transparent ? opts.opacity : ''}|${opts.map?.uuid ?? ''}`;
   let m = cache.get(key);
   if (!m) {
-    m = new THREE.MeshToonMaterial({ color, gradientMap: toonGradient(), transparent: !!opts.transparent, opacity: opts.opacity ?? 1, map: opts.map });
+    m = new THREE.MeshToonMaterial({ color, gradientMap: toonGradient(), transparent: !!opts.transparent, opacity: opts.opacity ?? 1 });
+    if (opts.map) m.map = opts.map;
     cache.set(key, m);
   }
   return m;

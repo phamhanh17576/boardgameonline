@@ -143,7 +143,11 @@ export const useStore = create<Store>((set, get) => {
       set({ mode: 'online', code: c, name, lobby: null, view: null, you: null, chat: [], fx: [], lastSeq: 0 });
       safeSet('hkn:name', name);
       try {
-        history.replaceState(null, '', `?phong=${c}`);
+        {
+          const q = new URLSearchParams(location.search);
+          q.set('phong', c);
+          history.replaceState(null, '', `?${q}`);
+        }
       } catch {
         /* bỏ qua */
       }
@@ -167,7 +171,10 @@ export const useStore = create<Store>((set, get) => {
       local = null;
       set({ mode: null, conn: 'idle', lobby: null, view: null, you: null, fx: [], lastSeq: 0 });
       try {
-        history.replaceState(null, '', location.pathname);
+        const q = new URLSearchParams(location.search);
+        q.delete('phong');
+        const rest = q.toString();
+        history.replaceState(null, '', location.pathname + (rest ? `?${rest}` : ''));
       } catch {
         /* bỏ qua */
       }
@@ -188,3 +195,6 @@ export const useMe = () => {
   const you = useStore((s) => s.you);
   return view?.players.find((p) => p.id === you) ?? null;
 };
+
+// Chỉ khi chạy `npm run dev`: cho phép công cụ kiểm thử phát sự kiện giả (xem hoạt cảnh thắng/thua).
+if (import.meta.env.DEV) (window as unknown as { __hknStore: typeof useStore }).__hknStore = useStore;

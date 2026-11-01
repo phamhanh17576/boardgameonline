@@ -8,6 +8,7 @@ import {
   createGame,
   randomSeed,
   type Action,
+  type BattleId,
   type GameState,
   type GameView,
   type HeroId,
@@ -108,10 +109,11 @@ export function cleanSettings(cur: RoomSettings, patch: Partial<RoomSettings>): 
   return next;
 }
 
-export function startFromSeats(seats: Seat[], settings: RoomSettings = DEFAULT_SETTINGS, seed = randomSeed()): GameState {
+export function startFromSeats(seats: Seat[], settings: RoomSettings = DEFAULT_SETTINGS, seed = randomSeed(), battleOrder?: BattleId[]): GameState {
   return createGame({
     seed,
     battleCount: settings.battleCount,
+    battleOrder,
     players: seats.map((s) => ({ id: s.id, name: s.name, heroId: s.heroId!, isBot: s.isBot })),
   });
 }

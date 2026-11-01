@@ -138,7 +138,7 @@ function FloatLabel({ f }: { f: FloatText }) {
   });
   return (
     <group ref={ref} position={f.pos}>
-      <Html center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+      <Html center zIndexRange={[4, 2]} style={{ pointerEvents: 'none' }}>
         <div className="float-text" style={f.color ? { background: f.color } : undefined}>
           {f.text}
         </div>
